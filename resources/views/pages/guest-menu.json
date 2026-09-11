@@ -1,0 +1,105 @@
+{
+  "menu": [
+    {
+      "url": "/",
+      "name": "Dashboard",
+      "i18n": "Dashboard",
+      "slug": "dashboard",
+      "icon": "dashboard"
+    },
+    {
+      "navheader": "Calendar"
+    },
+    {
+      "url": "calendar-appointment",
+      "name": "Calendar",
+      "i18n": "User",
+      "icon": "calendar"
+    },
+    {
+      "navheader": "Dental Services"
+    },
+    {
+      "url": "appointment-search",
+      "name": "Appointment",
+      "i18n": "User",
+      "icon": "bell",
+      "submenu":[{
+        "url": "appointment-search",
+        "name": "Set"
+      },
+      {
+        "url": "view-appointment",
+        "name": "Schedule"
+      },
+      {
+        "url": "view-status-appointment",
+        "name": "Status"
+      }]
+    },
+    {
+      "url": "dental-record-chart",
+      "name": "Patient Dental Chart",
+      "i18n": "User",
+      "icon": "users",
+      "submenu":[{
+        "url": "student-dental-record",
+        "name": "Student"
+      },
+      {
+        "url": "employee-dental-record",
+        "name": "Employee"
+      },
+      {
+        "url": "dependent-dental-record",
+        "name": "Dependent"
+      }]
+    },
+    {
+      "url": "treatment-records",
+      "name": "Treatment Record",
+      "i18n": "User",
+      "icon": "morph-folder"
+    },
+    {
+      "url": "dental-certificate",
+      "name": "Dental Certificate",
+      "i18n": "User",
+      "icon": "morph-bookmark"
+    },
+    {
+      "url": "records-of-visit",
+      "name": "Log Book",
+      "i18n": "User",
+      "icon": "grid",
+      "submenu":[{
+        "url": "records-of-visit",
+        "name": "Records of Visit"
+      },
+      {
+         "url": "records-of-checkup",
+        "name": "Dental Check-up"
+      },
+      {
+        "url": "records-of-cavityfilling",
+        "name": "Cavity Filling"
+      },
+      {
+        "url": "records-of-oralprophylaxis",
+        "name": "Oral Prophylaxis"
+      },
+      {
+        "url": "records-of-toothextraction",
+        "name": "Tooth Extraction"
+      },
+      {
+        "url": "/dental-OTC-medicine",
+        "name": "OTC Medicine"
+      },
+      {
+        "url": "dental-total-patient",
+        "name": "Total Patient"
+      }]
+    }
+  ]
+}

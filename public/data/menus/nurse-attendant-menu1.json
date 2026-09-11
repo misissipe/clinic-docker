@@ -1,0 +1,327 @@
+{
+  "menu": [
+    {
+      "url": "/",
+      "name": "Dashboard",
+      "i18n": "Dashboard",
+      "slug": "dashboard",
+      "icon": "dashboard"
+    },
+    {
+      "navheader": "Information"
+    },
+    { 
+      "url": "/search-student",
+      "name": "Patient",
+      "i18n": "User",
+      "icon": "notebook",
+      "submenu":[{
+        "url": "/search-student",
+        "name": "Student"
+      },
+      {
+        "url": "/search-employee",
+        "name": "Employee"
+      }]
+    },
+    {
+      "url": "add-doctors",
+      "name": "Doctor",
+      "i18n": "Users",
+      "icon": "users"
+    },   
+    {
+      "url": "add-signatories",
+      "name": "Signatories",
+      "i18n": "Users",
+      "icon": "pen"
+    },
+    {
+      "navheader": "Medical Services"
+    },
+    {
+      "url": "student-information",
+      "name": "Patient Health History",
+      "i18n": "User",
+      "icon": "desktop",
+      "submenu":[{
+        "url": "student-information",
+        "name": "Student"
+      },
+      {
+        "url": "employee-information",
+        "name": "Employee"
+      }]
+    },
+    {
+      "url": "patient-monitoring-search",
+      "name": "Patient Record",
+      "i18n": "User",
+      "icon": "pulse",
+      "submenu":[{
+        "url": "patient-monitoring-search",
+        "name": "Add New"
+      },
+      {
+        "url": "patient-view-record",
+        "name": "View Record"
+      }]
+    },
+    {
+      "url": "lab-results",
+      "name": "Lab Results",
+      "i18n": "User",
+      "icon": "lab"
+    },
+    {
+      "url": "medical-certificate",
+      "name": "Medical Certificate",
+      "i18n": "User",
+      "icon": "morph-bookmark"
+    }, 
+    {
+      "url": "referral-slip",
+      "name": "Referral Slip",
+      "i18n": "User",
+      "icon": "morph-doc"
+    },
+    {
+      "url": "view-generated-slip",
+      "name": "Pending Referral Slip",
+      "i18n": "User",
+      "icon": "morph-folder"
+    },
+      {
+      "url": "patient-status",
+      "name": "Status",
+      "i18n": "User",
+      "icon": "box"
+    },
+    {
+      "url": "medical-record-of-visit",
+      "name": "Log Book",
+      "i18n": "User",
+      "icon": "grid",
+      "submenu":[{
+        "url": "medical-record-of-visit",
+        "name": "Record of Visit"
+      },
+      {
+        "url": "/medical-wound-dressing",
+        "name": "Wound Dressing"
+      },
+      {
+        "url": "/medical-blood-pressure",
+        "name": "Blood Pressure"
+      },
+      {
+        "url": "/medical-provision-of-comfort",
+        "name": "Provision of Comfort"
+      },
+      {
+        "url": "/medical-issuance-of-certificate",
+        "name": "Issuance of Certificate"
+      },
+      {
+        "url": "/medical-issuance-of-slip",
+        "name": "Issuance of Referral"
+      },
+      {
+        "url": "/medical-OTC-medicine",
+        "name": "OTC Medicine"
+      },
+      {
+        "url": "/medical-other-concern",
+        "name": "Other Concern"
+      },
+      {
+      "url": "/medical-physical-assessment",
+        "name": "Pysical Assessment"
+      },
+      {
+      "url": "/medical-total-patient",
+        "name": "Total Patient"
+      }]
+    },
+    {
+     "url": "/search-enrolledstudent",
+      "name": "Insurance List",
+      "i18n": "User",
+      "icon": "list",
+      "submenu":[{
+        "url": "search-enrolledstudent",
+        "name": "View"
+      },
+      {
+        "url": "generate-validated",
+        "name": "Generate"
+      }]
+    },
+    {
+      "navheader": "Calendar"
+    },
+    {
+      "url": "calendar-appointment",
+      "name": "Calendar",
+      "i18n": "User",
+      "icon": "calendar"
+    },
+    {
+      "navheader": "Dental Services"
+    },
+    {
+      "url": "appointment-search",
+      "name": "Appointment",
+      "i18n": "User",
+      "icon": "bell",
+      "submenu":[{
+        "url": "appointment-search",
+        "name": "Set"
+      },
+      {
+        "url": "view-appointment",
+        "name": "Schedule"
+      },
+      {
+        "url": "view-status-appointment",
+        "name": "Status"
+      }]
+    },
+    {
+      "url": "dental-record-chart",
+      "name": "Patient Dental Chart",
+      "i18n": "User",
+      "icon": "users",
+      "submenu":[{
+        "url": "student-dental-record",
+        "name": "Student"
+      },
+      {
+        "url": "employee-dental-record",
+        "name": "Employee"
+      },
+      {
+        "url": "dependent-dental-record",
+        "name": "Dependent"
+      }]
+    },
+    {
+      "url": "treatment-records",
+      "name": "Treatment Record",
+      "i18n": "User",
+      "icon": "morph-folder"
+    },
+    {
+      "url": "dental-certificate",
+      "name": "Dental Certificate",
+      "i18n": "User",
+      "icon": "morph-bookmark"
+    },
+    {
+      "url": "records-of-visit",
+      "name": "Log Book",
+      "i18n": "User",
+      "icon": "grid",
+      "submenu":[{
+        "url": "records-of-visit",
+        "name": "Records of Visit"
+      },
+      {
+         "url": "records-of-checkup",
+        "name": "Dental Check-up"
+      },
+      {
+        "url": "records-of-cavityfilling",
+        "name": "Cavity Filling"
+      },
+      {
+        "url": "records-of-oralprophylaxis",
+        "name": "Oral Prophylaxis"
+      },
+      {
+        "url": "records-of-toothextraction",
+        "name": "Tooth Extraction"
+      },
+      {
+        "url": "/dental-OTC-medicine",
+        "name": "OTC Medicine"
+      },
+      {
+        "url": "dental-total-patient",
+        "name": "Total Patient"
+      }]
+    },
+    {
+      "url": "OTC-medicine",
+      "name": "OTC Medicine",
+      "i18n": "User",
+      "icon": "pen",
+      "submenu":[{
+        "url": "OTC-medicine",
+        "name": "Create"
+      },
+      {
+        "url": "patient-OTC-record",
+        "name": "Records"
+      }]
+    },
+    {
+      "navheader": "Inventory"
+    },
+    {
+      "url": "category-product",
+      "name": "Category",
+      "i18n": "User",
+      "icon": "list",
+      "submenu":[{
+        "url": "category-product",
+        "name": "Product"
+      },
+      {
+        "url": "category-measurement",
+        "name": "Measure"
+      }]
+    },
+    {
+      "url": "add-items",
+      "name": "Stock",
+      "i18n": "User",
+      "icon": "morph-folder",
+      "submenu":[{
+        "url": "add-items",
+        "name": "Add Items"
+      },
+      {
+        "url": "inventory",
+        "name": "Inventory"
+      },
+      {
+        "url": "Inventory-report",
+        "name": "Report"
+      }]
+    },
+    {
+      "url": "medicine",
+      "name": "Medicine",
+      "i18n": "Medicine",
+      "icon": "lab"
+    },
+    {
+      "navheader": "Report"
+    },
+    {
+      "url": "report-medical-services",
+      "name": "Report",
+      "i18n": "User",
+      "icon": "print-doc",
+      "submenu":[{
+        "url": "report-medical-services",
+        "name": "Medical Services"
+      },
+      {
+        "url": "report-dental-services",
+        "name": "Dental Services"
+      }]
+    }
+  ]
+}

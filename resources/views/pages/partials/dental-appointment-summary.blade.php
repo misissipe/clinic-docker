@@ -1,0 +1,18 @@
+@php
+    $summaryPurpose = $appointment->purpose;
+    $summaryPurpose = is_array($summaryPurpose) ? implode(', ', $summaryPurpose) : (string) $summaryPurpose;
+    $summaryStatus = strtolower((string) $appointment->status);
+    $summaryClass = in_array($summaryStatus, ['done','completed','approved','confirmed','rescheduled']) ? 'good' : (in_array($summaryStatus, ['cancelled','disapproved']) ? 'bad' : 'pending');
+    $summaryLabel = $summaryStatus === 'rescheduled'
+        ? 'Approved (Rescheduled)'
+        : $appointment->status;
+@endphp
+<div class="appointment-summary">
+    <div class="date-box"><span class="month">{{ $appointment->date->format('M') }}</span><span class="day">{{ $appointment->date->format('d') }}</span><small>{{ $appointment->date->format('D') }}</small></div>
+    <div class="summary-detail">
+        <p class="summary-service">{{ $summaryPurpose }}</p>
+        <p class="summary-line"><i class="fa fa-clock-o"></i> &nbsp;{{ \Carbon\Carbon::parse($appointment->time)->format('h:i A') }}</p>
+        <p class="summary-line"><i class="fa fa-map-marker"></i> &nbsp;{{ $clinicLocation }}</p>
+        <span class="badge-status {{ $summaryClass }}">{{ $summaryLabel }}</span>
+    </div>
+</div>

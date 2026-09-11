@@ -1,0 +1,39 @@
+<style>
+    .modal-header
+     {
+         background-color: rgb(110, 155, 222);
+     }
+     select option:hover {
+        cursor: pointer;
+    }
+</style>
+<!-- Editing form modal -->
+<div id="reschedule" class="modal fade">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 style="font-weight: bold; color: white; height: 10px">Reschedule</h5>
+            </div>
+            <form action="/reschedule" method="POST" id="rescheduleModal">
+                @csrf
+                <div class="modal-body">
+                    <div>
+                        <input type="hidden" name="id" style="display: inline-block;" class="form-control" id="id" value="{{$data->id}}">
+                        <input type="hidden" name="status" style="display: inline-block;" class="form-control col-5" value="Pending">
+                        <div class="col-md-12">
+                            <label for="date" style="display: inline-block;">Remarks:</label>
+                            <input type="text" id="date" style="display: inline-block;" class="form-control @error('date') is-invalid @enderror" name="date" value="{{ old('date') }}" required autocomplete="date" />
+                            <br>
+                            <label for="time" style="display: inline-block;">Time:</label>
+                            <input type="time" id="time" style="display: inline-block;" class="form-control @error('time') is-invalid @enderror" name="time" value="{{ old('time') }}" required autocomplete="time" />
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="submit" id="submitBtn" class="btn btn-primary">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

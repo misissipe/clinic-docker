@@ -1,0 +1,49 @@
+# Version control and editor metadata
+.git
+.gitignore
+.gitattributes
+.github
+.idea
+.vscode
+.DS_Store
+
+# Local environment and secrets
+.env
+.env.*
+!.env.example
+
+# Installed dependencies and build caches
+vendor
+node_modules
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Laravel runtime data
+storage/logs/*
+storage/framework/cache/*
+storage/framework/sessions/*
+storage/framework/views/*
+bootstrap/cache/*.php
+public/storage
+
+# Test and development artifacts
+tests
+.phpunit.result.cache
+phpunit.xml
+phpunit.xml.dist
+coverage
+.nyc_output
+
+# Local data and backups
+*.sql
+*.sqlite
+*.sqlite3
+*.bak
+*.backup
+
+# Docker development configuration is not needed inside the image
+docker-compose*.yml
+docker-compose*.yaml
+.dockerignore
+

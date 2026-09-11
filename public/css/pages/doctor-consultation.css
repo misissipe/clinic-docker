@@ -1,0 +1,537 @@
+.consultation-flow {
+  max-width: 760px;
+  margin: auto;
+}
+
+.flow-grid {
+  display: block;
+}
+
+.flow-panel {
+  display: none;
+  min-height: 650px;
+  overflow: hidden;
+  background: #fff;
+  border: 1px solid #cad6e6;
+  border-radius: 13px;
+  box-shadow: 0 4px 18px rgba(29, 57, 93, 0.08);
+}
+
+.flow-panel.active {
+  display: block;
+}
+
+.flow-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.flow-tab {
+  flex: 1;
+  padding: 12px 8px;
+  color: #738196;
+  font-size: 12px;
+  font-weight: 700;
+  background: #e9eef5;
+  border: 0;
+  border-radius: 9px;
+}
+
+.flow-tab.active {
+  color: #fff;
+  background: #0754c9;
+}
+
+.flow-tab.done {
+  color: #27805b;
+  background: #e2f2ea;
+}
+
+.flow-head {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 55px;
+  padding: 0 18px;
+  border-bottom: 1px solid #e8edf4;
+}
+
+.flow-head h4 {
+  margin: auto;
+  color: #172b4d;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.back-icon {
+  position: absolute;
+  color: #345477;
+  font-size: 23px;
+  background: transparent;
+  border: 0;
+}
+
+.flow-body {
+  padding: 18px;
+}
+
+.field-label {
+  display: block;
+  margin-bottom: 6px;
+  color: #203c65;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.read-box,
+.form-control {
+  color: #344861;
+  font-size: 13px;
+  background: #fff;
+  border: 1px solid #dbe3ed;
+  border-radius: 8px;
+}
+
+.read-box {
+  min-height: 74px;
+  padding: 12px;
+  white-space: pre-line;
+}
+
+.form-control {
+  min-height: 40px;
+}
+
+.form-control:focus {
+  border-color: #316fd0;
+  box-shadow: 0 0 0 3px rgba(49, 111, 208, 0.1);
+}
+
+textarea.form-control {
+  padding: 12px;
+  resize: vertical;
+}
+
+.info-strip,
+.medicine-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.info-item {
+  padding: 9px;
+  background: #f8fafd;
+  border: 1px solid #e2e8f1;
+  border-radius: 8px;
+}
+
+.info-item small,
+.patient-card small {
+  display: block;
+  color: #8391a5;
+  font-size: 10px;
+}
+
+.info-item strong,
+.patient-card strong {
+  color: #2d4565;
+  font-size: 12px;
+}
+
+.panel-actions,
+.preview-actions {
+  display: flex;
+  gap: 9px;
+}
+
+.panel-actions {
+  margin-top: 18px;
+}
+
+.panel-actions .btn,
+.preview-actions .btn {
+  flex: 1;
+  border-radius: 7px;
+}
+
+.btn-deep {
+  color: #fff;
+  background: #0754c9;
+  border-color: #0754c9;
+}
+
+.patient-card,
+.section-row {
+  display: flex;
+  justify-content: space-between;
+}
+
+.patient-card {
+  padding: 12px;
+  margin-bottom: 16px;
+  border: 1px solid #e1e7ef;
+  border-radius: 9px;
+}
+
+.section-row {
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.section-row h5 {
+  margin: 0;
+  color: #172b4d;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.medicine-row {
+  position: relative;
+  padding: 13px;
+  margin-bottom: 10px;
+  border: 1px solid #dce4ee;
+  border-radius: 9px;
+}
+
+.medicine-grid {
+  gap: 10px;
+}
+
+.medicine-name-field {
+  position: relative;
+  grid-column: 1/-1;
+  padding-right: 35px;
+}
+
+.dose-with-unit {
+  display: grid;
+  grid-template-columns: minmax(70px, 0.65fr) minmax(130px, 1.35fr);
+  gap: 6px;
+}
+
+.remove-medicine {
+  position: absolute;
+  top: 9px;
+  right: 9px;
+  color: #e04b4b;
+  font-size: 19px;
+  background: transparent;
+  border: 0;
+}
+
+.mini-label {
+  display: block;
+  margin-bottom: 3px;
+  color: #748298;
+  font-size: 10px;
+}
+
+.medicine-empty {
+  padding: 30px 10px;
+  color: #8795a8;
+  font-size: 12px;
+  text-align: center;
+  border: 1px dashed #ced8e5;
+  border-radius: 9px;
+}
+
+.medicine-results {
+  position: absolute;
+  top: 64px;
+  right: 35px;
+  left: 0;
+  z-index: 30;
+  display: none;
+  max-height: 220px;
+  overflow: auto;
+  background: #fff;
+  border: 1px solid #ced9e7;
+  border-radius: 8px;
+  box-shadow: 0 10px 25px rgba(25, 49, 79, 0.16);
+}
+
+.medicine-result {
+  padding: 12px 14px;
+  cursor: pointer;
+  border-bottom: 1px solid #edf1f5;
+  transition: background-color 0.15s ease, padding-left 0.15s ease;
+}
+
+.medicine-result:hover {
+  background: #f1f6ff;
+  padding-left: 18px;
+}
+
+.medicine-result strong {
+  display: block;
+  color: #2a4365;
+  font-size: 12px;
+}
+
+.medicine-result small,
+.medicine-result-empty {
+  color: #7b899c;
+  font-size: 10px;
+}
+
+.medicine-result small {
+  display: block;
+  margin-top: 3px;
+}
+
+.medicine-result-empty {
+  padding: 12px;
+}
+
+.medicine-stock-status {
+  display: flex;
+  grid-column: 1/-1;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 11px;
+}
+
+.stock-left {
+  color: #2477ad;
+}
+
+.stock-warning,
+.expiration-warning {
+  display: none;
+  color: #dc3545;
+  font-weight: 600;
+}
+
+.preview-paper {
+  position: relative;
+  min-height: 810px;
+  padding: 28px 38px 24px;
+  color: #111;
+  font-family: Arial, sans-serif;
+}
+
+.prescription-letterhead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.slsu-letterhead {
+  width: 78%;
+  max-height: 94px;
+  object-fit: contain;
+  object-position: left center;
+}
+
+.bagong-logo {
+  width: 82px;
+  max-height: 82px;
+  object-fit: contain;
+}
+
+.letterhead-values {
+  padding: 4px 0 6px;
+  color: #555;
+  font-family: Georgia, serif;
+  font-size: 8px;
+  text-align: center;
+  border-bottom: 2px solid #555;
+}
+
+.doctor-heading {
+  margin: 34px 0 54px;
+  font-size: 18px;
+  line-height: 1.25;
+  text-align: center;
+}
+
+.doctor-heading h2 {
+  margin: 0;
+  color: #080808;
+  font-size: 24px;
+  font-weight: 800;
+}
+
+.patient-lines {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 175px;
+  gap: 25px 18px;
+  font-size: 17px;
+}
+
+.patient-line {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+}
+
+.patient-line span {
+  flex: 1;
+  min-height: 25px;
+  padding: 0 5px 2px;
+  font-size: 14px;
+  border-bottom: 1px solid #111;
+}
+
+.address-line {
+  grid-column: 1/-1;
+}
+
+.prescription-date {
+  position: absolute;
+  right: 0;
+  bottom: -25px;
+  font-size: 9px;
+}
+
+.rx-pad {
+  position: relative;
+  min-height: 330px;
+  padding: 45px 0 0 78px;
+}
+
+.rx {
+  position: absolute;
+  top: 35px;
+  left: 0;
+  width: 62px;
+  height: 55px;
+  border: 2px solid #000;
+  color: #000;
+  font-family: "Times New Roman", Times, serif;
+  font-size: 44px;
+  line-height: 51px;
+  text-align: center;
+}
+
+.preview-list {
+  padding-left: 20px;
+  color: #111;
+  font-size: 12px;
+}
+
+.preview-list li {
+  margin-bottom: 13px;
+}
+
+.preview-list strong {
+  font-size: 12px;
+}
+
+.preview-instructions {
+  margin-top: 20px;
+  font-size: 12px;
+  white-space: pre-line;
+}
+
+.pad-bottom {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+}
+
+.accreditation-logos {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.accreditation-logos img:first-child {
+  width: 60px;
+}
+
+.accreditation-logos img:last-child {
+  width: 105px;
+}
+
+.signature {
+  width: 215px;
+  margin: 0;
+  font-size: 10px;
+  text-align: center;
+}
+
+.signature-line {
+  padding-top: 4px;
+  font-size: 12px;
+  border-top: 1px solid #111;
+}
+
+.preview-actions {
+  flex-wrap: wrap;
+  padding: 0 28px 22px;
+}
+
+.preview-actions .btn {
+  min-width: 140px;
+}
+
+.validation-alert {
+  margin-bottom: 14px;
+}
+
+@media (max-width: 767px) {
+  .flow-panel {
+    min-height: auto;
+  }
+
+  .flow-tab {
+    font-size: 10px;
+  }
+
+  .medicine-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media print {
+  @page {
+    size: A5 portrait;
+    margin: 0;
+  }
+
+  html,
+  body {
+    width: 148mm;
+    height: 210mm;
+    margin: 0;
+    padding: 0;
+  }
+
+  body * {
+    visibility: hidden;
+  }
+
+  .preview-panel,
+  .preview-panel * {
+    visibility: visible;
+  }
+
+  .preview-panel {
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: block;
+    width: 148mm;
+    height: 210mm;
+    border: 0;
+    box-shadow: none;
+  }
+
+  .preview-actions,
+  .flow-head,
+  .flow-tabs {
+    display: none;
+  }
+
+  .preview-paper {
+    box-sizing: border-box;
+    width: 148mm;
+    min-height: 210mm;
+    padding: 8mm 10mm 6mm;
+  }
+}

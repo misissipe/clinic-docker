@@ -1,0 +1,37 @@
+{
+  "menu": [
+    {
+      "navheader": "Doctor"
+    },
+    {
+      "url": "/",
+      "name": "Dashboard",
+      "i18n": "Dashboard",
+      "slug": "dashboard",
+      "icon": "desktop"
+    },
+    {
+      "url": "patient-view-record",
+      "name": "Medical Record",
+      "i18n": "User",
+      "icon": "pulse"
+    },
+    {
+      "url": "view-generated-slip",
+      "name": "Generated Document ",
+      "i18n": "User",
+      "icon": "list",
+      "submenu":[
+      {
+        "url": "view-generated-slip",
+        "name": "Referral Slip"
+      }]
+    },
+    {
+      "url": "view-return-slip",
+      "name": "Return Slip",
+      "i18n": "User",
+      "icon": "download"
+    }
+  ]
+}

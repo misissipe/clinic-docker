@@ -1,0 +1,157 @@
+{
+  "menu": [
+    {
+      "url": "dentist-dashboard",
+      "name": "Dashboard",
+      "i18n": "Dashboard",
+      "slug": "dentist-dashboard",
+      "icon": "desktop"
+    },
+    {
+      "navheader": "Calendar"
+    },
+    {
+      "url": "calendar-appointment",
+      "name": "Calendar",
+      "i18n": "User",
+      "icon": "calendar"
+    },
+    {
+      "navheader": "Dental Services"
+    },
+    {
+      "url": "appointment-search",
+      "name": "Appointment",
+      "i18n": "User",
+      "icon": "bell",
+      "submenu":[{
+        "url": "view-status-appointment",
+        "name": "Status"
+      }]
+    },
+    {
+      "url": "dental-record-chart",
+      "name": "Patient Dental Chart",
+      "i18n": "User",
+      "icon": "users",
+      "submenu":[{
+        "url": "student-dental-record",
+        "name": "Student"
+      },
+      {
+        "url": "employee-dental-record",
+        "name": "Employee"
+      },
+      {
+        "url": "dependent-dental-record",
+        "name": "Dependent"
+      }]
+    },
+    {
+      "url": "treatment-records",
+      "name": "Treatment Record",
+      "i18n": "User",
+      "icon": "morph-folder"
+    },
+    {
+      "url": "dental-certificate",
+      "name": "Dental Certificate",
+      "i18n": "User",
+      "icon": "morph-bookmark"
+    },
+    {
+      "url": "records-of-visit",
+      "name": "Log Book",
+      "i18n": "User",
+      "icon": "grid",
+      "submenu":[{
+        "url": "records-of-visit",
+        "name": "Records of Visit"
+      },
+      {
+         "url": "records-of-checkup",
+        "name": "Dental Check-up"
+      },
+      {
+        "url": "records-of-cavityfilling",
+        "name": "Cavity Filling"
+      },
+      {
+        "url": "records-of-oralprophylaxis",
+        "name": "Oral Prophylaxis"
+      },
+      {
+        "url": "records-of-toothextraction",
+        "name": "Tooth Extraction"
+      },
+      {
+        "url": "/dental-OTC-medicine",
+        "name": "OTC Medicine"
+      },
+      {
+        "url": "dental-total-patient",
+        "name": "Total Patient"
+      }]
+    },
+    {
+      "url": "OTC-medicine",
+      "name": "OTC Medicine",
+      "i18n": "User",
+      "icon": "pen",
+      "submenu":[{
+        "url": "OTC-medicine",
+        "name": "Create"
+      },
+      {
+        "url": "patient-OTC-record",
+        "name": "Records"
+      }]
+    },
+    {
+      "navheader": "Inventory"
+    },
+    {
+      "url": "category-product",
+      "name": "Category",
+      "i18n": "User",
+      "icon": "list",
+      "submenu":[{
+        "url": "category-product",
+        "name": "Product"
+      },
+      {
+        "url": "category-measurement",
+        "name": "Measure"
+      }]
+    },
+    {
+      "url": "add-items",
+      "name": "Stock",
+      "i18n": "User",
+      "icon": "morph-folder",
+      "submenu":[{
+        "url": "add-items",
+        "name": "Add Items"
+      },
+      {
+        "url": "inventory",
+        "name": "Inventory"
+      }]
+    },
+    {
+      "navheader": "Report"
+    },
+    {
+      "url": "report-medical-services",
+      "name": "Report",
+      "i18n": "User",
+      "icon": "print-doc",
+      "submenu":[
+      {
+        "url": "report-dental-services",
+        "name": "Dental Services"
+      }]
+    }
+    
+  ]
+}

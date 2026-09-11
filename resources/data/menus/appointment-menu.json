@@ -1,0 +1,47 @@
+{
+  "menu": [
+    {
+      "url": "patient-appointment-dashboard",
+      "name": "Dashboard",
+      "i18n": "Dashboard",
+      "slug": "dashboard",
+      "icon": "desktop"
+    },
+    {
+      "navheader": "Appointment"
+    },
+    {
+      "url": "calendar",
+      "name": "Calendar",
+      "i18n": "User",
+      "icon": "calendar"
+    },
+    {
+      "url": "set",
+      "name": "Book Appointment",
+      "i18n": "User",
+      "icon": "box"
+    },
+    {
+      "url": "calen",
+      "name": "My Appointment",
+      "i18n": "User",
+      "icon": "user"
+    },
+    {
+      "navheader": "Dental Appointment"
+    },
+    {
+      "url": "dental-appointment",
+      "name": "Book Dental Appointment",
+      "i18n": "User",
+      "icon": "plus-circle"
+    },
+    {
+      "url": "dental-my-appointments",
+      "name": "My Dental Appointments",
+      "i18n": "User",
+      "icon": "calendar"
+    }
+  ]
+}
