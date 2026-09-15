@@ -8,9 +8,17 @@
         : $appointment->status;
 @endphp
 <div class="appointment-summary">
-    <div class="date-box"><span class="month">{{ $appointment->date->format('M') }}</span><span class="day">{{ $appointment->date->format('d') }}</span><small>{{ $appointment->date->format('D') }}</small></div>
+    @php
+    $appointmentDate = \Carbon\Carbon::parse($appointment->date);
+@endphp
+
+<div class="date-box">
+    <span class="month">{{ $appointmentDate->format('M') }}</span>
+    <span class="day">{{ $appointmentDate->format('d') }}</span>
+    <small>{{ $appointmentDate->format('D') }}</small>
+</div>
     <div class="summary-detail">
-        <p class="summary-service">{{ $summaryPurpose }}</p>
+       <p class="summary-service">{{ implode(', ', json_decode($summaryPurpose, true) ?? []) }}</p>
         <p class="summary-line"><i class="fa fa-clock-o"></i> &nbsp;{{ \Carbon\Carbon::parse($appointment->time)->format('h:i A') }}</p>
         <p class="summary-line"><i class="fa fa-map-marker"></i> &nbsp;{{ $clinicLocation }}</p>
         <span class="badge-status {{ $summaryClass }}">{{ $summaryLabel }}</span>

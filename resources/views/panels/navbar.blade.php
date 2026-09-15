@@ -176,7 +176,15 @@ data-bgcolor="@if(isset($configData['navbarBgColor'])){{$configData['navbarBgCol
                 @else
                 <span class="user-name">{{ session('name') }}</span>
                 @endif
+                @if(session('unlimited_access') || in_array(session('role'), ['Admin', 'Super Admin'], true))
+                <span style="font-size:13px;font-weight:500;" class="user-status text-muted" title="Unlimited access">{{ session('role') }} - <span style="font-size:20px;font-weight:500;line-height:1;vertical-align:-2px;">∞</span></span>
+                @elseif(session('access_start') && session('access_end'))
+                <span class="user-status text-muted" title="Account access period">
+                Active until – {{ \Carbon\Carbon::parse(session('access_end'))->format('M j, Y') }}
+                </span> 
+                @else
                 <span class="user-status text-muted">{{ session('campus')}}</span>
+                @endif
               </div>
               <span><img class="round" src="{{ session('photo')?session('photo'):asset('images/icon/sketch-mac-icon.png') }}" alt="avatar" height="40" width="40"></span>
             </a>

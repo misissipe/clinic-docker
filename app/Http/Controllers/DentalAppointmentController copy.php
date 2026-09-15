@@ -377,10 +377,9 @@ class DentalAppointmentController extends Controller
             $patientId = $user->patientId
                 ?? $user->StudentNo
                 ?? $user->AgencyNumber
-                ?? session('patientId')
-                ?? session('username'); 
+                ?? session('patientId'); 
         } else {
-            $patientId = session('patientId') ?? session('username');
+            $patientId = session('patientId');
         }
 
         $patientId = $this->resolveEmployeeSessionPatientId($patientId);
@@ -734,7 +733,7 @@ class DentalAppointmentController extends Controller
     {
         if (!$patientId) {
             return null;
-        }
+        } 
 
         if (strcasecmp((string) $patientType, 'Employee') === 0) {
             $email = DB::table('employee_info')

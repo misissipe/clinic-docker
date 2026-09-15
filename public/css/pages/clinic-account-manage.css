@@ -1,0 +1,346 @@
+.account-page {
+  padding: 10px 0 30px;
+}
+
+.account-card {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 32px;
+  background: #fff;
+  border-radius: 20px;
+  box-shadow: 0 16px 42px rgba(57, 94, 148, 0.1);
+}
+
+.account-header,
+.user-panel,
+.user-details,
+.account-dates,
+.roles-heading,
+.account-footer,
+.footer-note,
+.account-actions {
+  display: flex;
+  align-items: center;
+}
+
+.account-header {
+  position: relative;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.header-icon,
+.user-avatar,
+.role-initials {
+  display: grid;
+  place-items: center;
+  color: #2f73e9;
+  background: #e8f0ff;
+  border-radius: 50%;
+}
+
+.header-icon {
+  width: 62px;
+  height: 62px;
+  flex: 0 0 62px;
+  font-size: 32px;
+}
+
+.account-header h1 {
+  margin: 0 0 3px;
+  color: #14213a;
+  font-size: 30px;
+  font-weight: 600;
+}
+
+.account-header p,
+.user-details p,
+.roles-heading p {
+  margin: 0;
+  color: #66758f;
+}
+
+.close-button {
+  position: absolute;
+  top: 6px;
+  right: 0;
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  color: #66758f;
+  background: #eef2f8;
+  border-radius: 8px;
+  font-size: 28px;
+}
+
+.user-panel {
+  justify-content: space-between;
+  gap: 24px;
+  padding: 20px 0 24px;
+  border-bottom: 1px solid #d7e1ee;
+}
+
+.user-details {
+  gap: 12px;
+  min-width: 260px;
+}
+
+.user-avatar {
+  width: 48px;
+  height: 48px;
+  flex: 0 0 48px;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.user-details h2 {
+  margin: 0 0 3px;
+  color: #14213a;
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.user-details p {
+  font-size: 13px;
+}
+
+.account-dates {
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.unlimited-access {
+  min-height: 44px;
+  margin-top: 21px;
+  padding: 0 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #1769df;
+  background: #e8f0ff;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.unlimited-access i {
+  font-size: 20px;
+}
+
+.field-group label {
+  display: block;
+  margin-bottom: 6px;
+  color: #496187;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.field-group .form-control {
+  min-width: 190px;
+  height: 44px;
+  color: #36547d;
+  background: #fff;
+  border: 1px solid #cbd9ec;
+  border-radius: 8px;
+}
+
+.field-error,
+.form-error {
+  display: block;
+  margin-top: 6px;
+  color: #dc3545;
+  font-size: 12px;
+}
+
+.roles-section {
+  padding-top: 24px;
+}
+
+.roles-heading {
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 16px;
+}
+
+.roles-heading h2 {
+  margin: 0 0 3px;
+  color: #14213a;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.date-tip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 13px;
+  color: #1769df;
+  background: #e8f0ff;
+  border-radius: 8px;
+  font-size: 13px;
+}
+
+.roles-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.role-card {
+  position: relative;
+  min-height: 160px;
+  margin: 0;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #263b5d;
+  background: #fff;
+  border: 1px solid #d7e1ee;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.role-card:hover,
+.role-card.selected {
+  background: #f3f7ff;
+  border-color: #4f88ee;
+}
+
+.role-check {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 20px;
+  height: 20px;
+  accent-color: #2f73e9;
+}
+
+.role-initials {
+  width: 46px;
+  height: 46px;
+  margin-bottom: 9px;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.role-name {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.role-description {
+  margin-top: 2px;
+  color: #66758f;
+  font-size: 13px;
+}
+
+.role-state {
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: #2f73e9;
+  font-size: 12px;
+}
+
+.account-footer {
+  justify-content: space-between;
+  gap: 20px;
+  margin-top: 24px;
+  padding-top: 22px;
+  border-top: 1px solid #d7e1ee;
+}
+
+.footer-note {
+  gap: 8px;
+  color: #66758f;
+  font-size: 13px;
+}
+
+.footer-note i {
+  color: #2f73e9;
+  font-size: 20px;
+}
+
+.account-actions {
+  gap: 10px;
+}
+
+.account-actions .btn {
+  min-width: 150px;
+  padding: 11px 18px;
+  border: 0;
+  border-radius: 8px;
+}
+
+.account-actions .btn-light {
+  color: #435d83;
+  background: #eef2f8;
+}
+
+.account-actions .btn-primary {
+  color: #fff;
+  background: #337eef;
+}
+
+@media (max-width: 900px) {
+  .account-card {
+    padding: 24px;
+  }
+
+  .user-panel,
+  .roles-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .roles-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 600px) {
+  .account-page {
+    padding: 0;
+  }
+
+  .account-card {
+    padding: 20px 16px;
+    border-radius: 0;
+  }
+
+  .account-header h1 {
+    padding-right: 42px;
+    font-size: 23px;
+  }
+
+  .account-dates,
+  .account-actions {
+    width: 100%;
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .field-group,
+  .field-group .form-control {
+    width: 100%;
+  }
+
+  .roles-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .account-footer {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .account-actions .btn {
+    width: 100%;
+  }
+}

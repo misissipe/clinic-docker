@@ -191,19 +191,178 @@ class DentalAppointmentController extends Controller
 
     public function store(Request $request)
     {
-        try{
-             Appointment::create($data);
-            
-        } catch (\Exception $e) {;
-            // dd('joeding');
+        $request->validate([
+            'service' => 'required|array|min:1',
+            'service.*' => 'required|in:' . implode(',', array_keys($this->services)),
+            'appointment_date' => 'required|date|after_or_equal:today',
+            'appointment_time' => 'required|in:' . implode(',', $this->timeSlots),
+            'patient_type' => 'required|in:Student,Employee',
+            'patient_id' => 'required|max:100',
+            'full_name' => 'required|max:255',
+            'course_department' => 'nullable|max:255',
+            'contact_number' => 'required|max:20',
+            'reason_for_visit' => 'nullable|max:200',
+            'additional_notes' => 'nullable|max:200'
+        ], [
+            'service.required' => 'Please select at least one dental service.',
+            'appointment_time.required' => 'Please select an available time.'
+        ]);
+
+        $selectedDate = Carbon::parse($request->appointment_date);
+
+        if ($selectedDate->isWeekend()) {
+            return back()
+                ->withInput()
+                ->withErrors(['appointment_date' => 'The clinic is closed on weekends.']);
+        }
+
+        $user = Auth::user();
+        $activeRequestPatientId = $user
+            ? ($user->patientId
+                ?? $user->StudentNo
+                ?? $user->AgencyNumber
+                ?? session('patientId'))
+            : (session('patientId'));
+
+        $activeRequestPatientId = $this->resolveEmployeeSessionPatientId(
+            $activeRequestPatientId
+        ) ?: $request->patient_id;
+
+        $hasActiveRequest = Appointment::where('patientId', $activeRequestPatientId)
+            ->where('campus', session('campus'))
+            ->whereNotIn(DB::raw('LOWER(TRIM(status))'), [
+                'done',
+                'completed',
+                'disapproved',
+                'cancelled',
+                'canceled',
+            ])
+            ->exists();
+
+        if ($hasActiveRequest) {
             return back()
                 ->withInput()
                 ->withErrors([
-                    'appointment_date' => $e->getMessage()
+                    'appointment_date' => 'You already have an active dental appointment request. You may request again after it is Done, Disapproved, or Cancelled.'
                 ]);
         }
 
-       
+        if ($this->getClinicLeaveStatus($selectedDate)['clinic_closed']) {
+            return back()
+                ->withInput()
+                ->withErrors(['appointment_date' => 'No dental appointments are available on this date because the dentist is on leave.']);
+        }
+
+        if ($request->patient_type === 'Student') {
+            $studentAppointments = Appointment::whereDate('date', $request->appointment_date)
+                ->where('campus', session('campus'))
+                ->whereRaw('LOWER(TRIM(role)) = ?', ['student'])
+                ->whereIn(DB::raw('LOWER(TRIM(status))'), [
+                    'pending', 'for approval', 'approved', 'confirmed', 'rescheduled',
+                ])
+                ->count();
+
+            if ($studentAppointments >= $this->dailyStudentLimit) {
+                return back()
+                    ->withInput()
+                    ->withErrors([
+                        'appointment_date' => 'This date has reached the daily limit of 6 student appointments. Please select another date.'
+                    ]);
+            }
+        }
+
+        $schedule = Carbon::parse(
+            $request->appointment_date . ' ' . $request->appointment_time
+        );
+
+        if ($schedule->isPast()) {
+            return back()
+                ->withInput()
+                ->withErrors(['appointment_time' => 'Please select a future schedule.']);
+        }
+
+        $existingAppointment = Appointment::whereDate('date', $request->appointment_date)
+            ->whereTime('time', $request->appointment_time)
+            ->whereIn('status', $this->activeStatuses)
+            ->first();
+
+        if ($existingAppointment) {
+            return back()
+                ->withInput()
+                ->withErrors(['appointment_time' => 'This time is already booked.']);
+        }
+
+        $name = explode(' ', trim($request->full_name));
+        $firstname = array_shift($name);
+        $lastname = count($name) > 0 ? array_pop($name) : $firstname;
+        $middlename = count($name) > 0 ? implode(' ', $name) : null;
+
+        $remarks = '';
+
+        if ($request->reason_for_visit) {
+            $remarks .= 'Reason for Visit: ' . $request->reason_for_visit . "\n";
+        }
+
+        if ($request->additional_notes) {
+            $remarks .= 'Additional Notes: ' . $request->additional_notes;
+        }
+
+        $appointment = Appointment::create([
+            'patientId' => $request->patient_id,
+            'contactNo' => preg_replace('/[^0-9]/', '', $request->contact_number),
+            'lastname' => $lastname,
+            'firstname' => $firstname,
+            'middlename' => $middlename,
+            'role' => $request->patient_type,
+            'date' => $request->appointment_date,
+            'time' => $request->appointment_time,
+            'purpose' => json_encode($request->service),
+            'status' => 'Pending',
+            'remarks' => trim(substr($remarks, 0, 255)),
+            'campus' => session('campus')
+        ]);
+
+        // $email = $this->resolvePatientEmail(
+        //     $activeRequestPatientId,
+        //     $request->patient_type
+        // );
+
+        // if ($email) {
+        //     try {
+        //         $html = view('mail.dental-appointment-submitted', [
+        //             'appointment' => $appointment,
+        //             'patientName' => trim(implode(' ', array_filter([
+        //                 $appointment->firstname,
+        //                 $appointment->middlename,
+        //                 $appointment->lastname,
+        //             ]))),
+        //             'services' => is_array($appointment->purpose)
+        //                 ? implode(', ', $appointment->purpose)
+        //                 : (string) $appointment->purpose,
+        //         ])->render();
+
+        //         Mail::send([], [], function ($message) use ($email, $html) {
+        //             $message->to($email)
+        //                 ->from(
+        //                     config('mail.from.address'),
+        //                     config('mail.from.name')
+        //                 )
+        //                 ->subject('Dental Appointment Request Received')
+        //                 ->setBody($html, 'text/html');
+        //         });
+        //     } catch (\Throwable $exception) {
+        //         Log::warning('Dental appointment confirmation email failed.', [
+        //             'appointment_id' => $appointment->id,
+        //             'email' => $email,
+        //             'error' => $exception->getMessage(),
+        //         ]);
+        //     }
+        // }
+
+        return redirect()
+            ->route('dental.appointment.create')
+            ->with('appointment_confirmed', true)
+            ->with('confirmed_appointment_id', $appointment->id);
     }
 
     public function index()

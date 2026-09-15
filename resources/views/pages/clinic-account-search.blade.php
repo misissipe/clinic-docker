@@ -1,63 +1,271 @@
 @extends('layouts.contentLayoutMaster')
 @section('title', 'Clinic Accounts')
 
+@section('vendor-styles')
+<link rel="stylesheet" type="text/css" href="{{ asset('vendors/css/tables/datatable/datatables.min.css') }}">
+@endsection
+
 @section('content')
 <style>
-  .account-shell{max-width:1050px;margin:0 auto}.account-card{background:#fff;border:1px solid #e2e8f2;border-radius:14px;box-shadow:0 14px 35px rgba(35,62,99,.08);overflow:hidden}.account-head{padding:24px 28px;background:linear-gradient(135deg,#4e83d7,#76a2e3);color:#fff}.account-head h3{margin:0;color:#fff}.account-head p{margin:5px 0 0;color:rgba(255,255,255,.82)}.account-body{padding:26px}.employee-search{position:relative;margin-bottom:24px}.employee-search .form-control{height:48px;border-color:#3978ee;border-radius:9px;padding:0 44px 0 14px;box-shadow:0 0 0 1px rgba(57,120,238,.08)}.search-icon{position:absolute;right:15px;top:14px;color:#3978ee;font-size:20px}.search-results{display:none;position:absolute;z-index:30;top:54px;left:0;width:100%;max-height:310px;overflow-y:auto;background:#fff;border:1px solid #cfd9e8;border-radius:8px;box-shadow:0 12px 26px rgba(35,62,99,.16)}.search-results.is-open{display:block}.search-option{display:block;padding:12px 14px;color:#263f61;border-bottom:1px solid #edf0f5}.search-option:last-child{border-bottom:0}.search-option:hover,.search-option:focus{background:#f2f6ff;color:#245fbd}.search-option-name{display:block;font-weight:700}.search-option-meta{display:block;margin-top:2px;color:#8391a5;font-size:11px}.search-message{padding:14px;color:#8391a5;font-size:12px}.employee-table th{color:#607795;font-size:11px;text-transform:uppercase}.employee-name{color:#263f61;font-weight:700}.employee-meta{display:block;color:#8897aa;font-size:11px}.role-badge{display:inline-block;padding:5px 9px;border-radius:14px;background:#eaf2ff;color:#3269b7;font-size:11px;font-weight:700}.not-registered{color:#9aa7b7;font-size:12px}.empty-result{padding:40px;text-align:center;color:#8391a5}@media(max-width:600px){.account-body{padding:18px}}
+  .clinic-account-card {
+    margin-bottom: 24px;
+    background: #fff;
+    border-radius: 4px;
+    box-shadow: 0 8px 20px rgba(35, 62, 99, 0.12);
+  }
+
+  .clinic-account-body {
+    padding: 24px 26px;
+  }
+
+  .account-toolbar,
+  .table-controls,
+  .table-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  .account-toolbar {
+    justify-content: flex-end;
+  }
+
+  .employee-search {
+    position: relative;
+    width: 310px;
+  }
+
+  .employee-search .form-control {
+    height: 40px;
+    padding-right: 48px;
+    border-color: #5a8dee;
+    border-radius: 4px;
+  }
+
+  .search-button {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 48px;
+    height: 40px;
+    padding: 0;
+    color: #fff;
+    background: #5a8dee;
+    border: 0;
+    border-radius: 0 4px 4px 0;
+    font-size: 20px;
+  }
+
+  .search-results {
+    display: none;
+    position: absolute;
+    z-index: 30;
+    top: 45px;
+    left: 0;
+    width: 100%;
+    max-height: 310px;
+    overflow-y: auto;
+    background: #fff;
+    border: 1px solid #cfd9e8;
+    border-radius: 4px;
+    box-shadow: 0 12px 26px rgba(35, 62, 99, 0.16);
+  }
+
+  .search-results.is-open { display: block; }
+  .search-option { display: block; padding: 12px 14px; color: #263f61; border-bottom: 1px solid #edf0f5; }
+  .search-option:last-child { border-bottom: 0; }
+  .search-option:hover, .search-option:focus { color: #245fbd; background: #f2f6ff; }
+  .search-option-name { display: block; font-weight: 600; }
+  .search-option-meta, .search-message { color: #8391a5; font-size: 11px; }
+  .search-option-meta { display: block; margin-top: 2px; }
+  .search-message { padding: 14px; }
+
+  .dataTables_wrapper {
+    margin-top: 28px;
+  }
+
+  .dataTables_wrapper .dataTables_length,
+  .dataTables_wrapper .dataTables_filter {
+    color: #405b7e;
+    font-size: 12px;
+    text-transform: uppercase;
+  }
+
+  .table-controls {
+    margin: 28px 0 12px;
+    color: #405b7e;
+    font-size: 12px;
+    text-transform: uppercase;
+  }
+
+  .table-controls select {
+    width: 56px;
+    height: 34px;
+    margin: 0 5px;
+    color: #526d90;
+    border: 1px solid #d5deea;
+    border-radius: 4px;
+  }
+
+  .account-table {
+    min-width: 980px;
+    margin-bottom: 0;
+    color: #687b94;
+    border: 1px solid #d9e1ec;
+  }
+
+  .account-table thead th {
+    padding: 8px 10px;
+    color: #fff;
+    background: #6e9bde;
+    border-color: #d9e1ec;
+    font-size: 12px;
+    font-weight: 600;
+    text-align: center;
+    text-transform: uppercase;
+  }
+
+  .account-table tbody tr:nth-child(odd) { background: #f7f7f7; }
+  .account-table tbody tr:nth-child(even) { background: #fff; }
+
+  .account-table td {
+    padding: 13px 10px;
+    vertical-align: middle;
+    border-color: #d9e1ec;
+  }
+
+  .employee-id,
+  .action-cell {
+    text-align: center;
+  }
+
+  .employee-name {
+    color: #566d8a;
+    font-weight: 500;
+  }
+
+  .role-badge {
+    display: inline-block;
+    color: #3269b7;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .not-registered { color: #9aa7b7; font-size: 12px; }
+
+  .manage-button {
+    width: 38px;
+    height: 34px;
+    padding: 0;
+    color: #486585;
+    background: transparent;
+    border: 0;
+    font-size: 19px;
+  }
+
+  .manage-button:hover { color: #5a8dee; }
+  .empty-result { padding: 40px !important; text-align: center; color: #8391a5; }
+
+  .table-footer {
+    margin-top: 14px;
+    color: #687b94;
+    font-size: 13px;
+  }
+
+  .table-footer .pagination { margin: 0; }
+
+  @media (max-width: 700px) {
+    .clinic-account-body { padding: 18px; }
+    .account-toolbar { align-items: stretch; flex-direction: column; }
+    .employee-search { width: 100%; }
+    .table-footer { align-items: flex-start; flex-direction: column; }
+  }
 </style>
 
-<div class="account-shell">
-  <div class="account-card">
-    <div class="account-head">
-      <h3>Clinic Accounts</h3>
-      <p>Search for an employee before registering or managing their clinic role.</p>
-    </div>
-    <div class="account-body">
+<div class="clinic-account-card">
+  <div class="clinic-account-body">
+    <div class="account-toolbar">
       <div class="employee-search">
-        <input type="search" id="employee-search" class="form-control" placeholder="Type an employee name, ID, or email" autocomplete="off" autofocus aria-label="Search employees" aria-controls="employee-search-results" aria-expanded="false">
-        <i class="bx bx-search search-icon" aria-hidden="true"></i>
+        <input
+          type="search"
+          id="employee-search"
+          class="form-control"
+          placeholder="Search employee"
+          autocomplete="off"
+          autofocus
+          aria-label="Search employees"
+          aria-controls="employee-search-results"
+          aria-expanded="false"
+        >
+        <button class="search-button" type="button" aria-label="Search">
+          <i class="bx bx-search" aria-hidden="true"></i>
+        </button>
         <div id="employee-search-results" class="search-results" role="listbox"></div>
       </div>
-
-      <div class="table-responsive">
-        <table class="table employee-table">
-          <thead><tr><th>Employee</th><th>Email</th><th>Clinic Role</th><th class="text-right">Action</th></tr></thead>
-          <tbody>
-          @forelse($employees as $employee)
-            <tr>
-              <td>
-                <a class="employee-name" href="{{ route('clinic-accounts.manage', $employee->id) }}">{{ trim($employee->FirstName.' '.$employee->MiddleName.' '.$employee->LastName) }}</a>
-                <span class="employee-meta">Employee ID: {{ $employee->AgencyNumber }}</span>
-              </td>
-              <td>{{ $employee->EmailAddress ?: 'No email recorded' }}</td>
-              <td>
-                @if($employee->clinic_role)<span class="role-badge">{{ $employee->clinic_role }}</span>
-                @else<span class="not-registered">Not registered</span>@endif
-              </td>
-              <td class="text-right">
-                <a href="{{ route('clinic-accounts.manage', $employee->id) }}" class="btn btn-sm btn-outline-primary">
-                  {{ $employee->clinic_role ? 'Manage Role' : 'Select' }}
-                </a>
-              </td>
-            </tr>
-          @empty
-            <tr>
-              <td colspan="4" class="empty-result">
-                {{ $search === '' ? 'Search for an employee to view account details.' : 'No employees found.' }}
-              </td>
-            </tr>
-          @endforelse
-          </tbody>
-        </table>
-      </div>
-
-      <div class="d-flex justify-content-center mt-2">{{ $employees->links() }}</div>
     </div>
+
+    <div class="table-responsive">
+      <table class="table table-bordered table-striped zero-configuration account-table">
+        <thead>
+          <tr>
+            <th>Employee ID</th>
+            <th>Last Name</th>
+            <th>First Name</th>
+            <th>Middle Name</th>
+            <th>Email</th>
+            <th>Clinic Role</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+        @forelse($employees as $employee)
+          <tr>
+            <td class="employee-id">{{ $employee->AgencyNumber }}</td>
+            <td>{{ $employee->LastName }}</td>
+            <td>{{ $employee->FirstName }}</td>
+            <td>{{ $employee->MiddleName ?: '—' }}</td>
+            <td>{{ $employee->EmailAddress ?: 'No email recorded' }}</td>
+            <td>
+              @if($employee->clinic_role)
+                <span class="role-badge">{{ implode(', ', \App\Http\Controllers\RoleController::accountRoles($employee->clinic_role)) }}</span>
+              @else
+                <span class="not-registered">Not registered</span>
+              @endif
+            </td>
+            <td class="action-cell">
+              <a
+                href="{{ route('clinic-accounts.manage', $employee->id) }}"
+                class="manage-button"
+                aria-label="{{ $employee->clinic_role ? 'Manage roles' : 'Register account' }} for {{ $employee->FirstName }} {{ $employee->LastName }}"
+                title="{{ $employee->clinic_role ? 'Manage roles' : 'Register account' }}"
+              >
+                <i class="bx bx-folder-open" aria-hidden="true"></i>
+              </a>
+            </td>
+          </tr>
+        @empty
+          <tr>
+            <td colspan="7" class="empty-result">
+              {{ $search === '' ? 'No active clinic accounts found for this campus.' : 'No employees found.' }}
+            </td>
+          </tr>
+        @endforelse
+        </tbody>
+      </table>
+    </div>
+
   </div>
 </div>
 @endsection
 
+@section('vendor-scripts')
+<script src="{{ asset('vendors/js/tables/datatable/datatables.min.js') }}"></script>
+<script src="{{ asset('vendors/js/tables/datatable/dataTables.bootstrap4.min.js') }}"></script>
+@endsection
+
 @section('page-scripts')
+<script src="{{ asset('js/scripts/datatables/datatable.js') }}"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function () {

@@ -1035,8 +1035,13 @@
               <div class="review-row">
                 <span class="review-symbol"><i class="fa fa-calendar"></i></span>
                 <span class="review-label">Date & Time</span>
-                <span class="review-value">{{ $confirmedAppointment->date->format('l, F d, Y') }}<br>
-                  <span style="color:var(--da-blue)">{{ \Carbon\Carbon::parse($confirmedAppointment->time)->format('h:i A') }}</span>
+                <span class="review-value">
+                    {{ \Carbon\Carbon::parse($confirmedAppointment->date)->format('l, F d, Y') }}
+                    <br>
+
+                    <span style="color:var(--da-blue)">
+                        {{ \Carbon\Carbon::parse($confirmedAppointment->time)->format('h:i A') }}
+                    </span>
                 </span>
               </div>
               <div class="review-row">
@@ -1575,7 +1580,7 @@ $(document).ready(function () {
         if (hasActiveRequest) {
             event.preventDefault();
             Swal.fire({
-                icon: 'warning',
+                icon: 'warning', 
                 title: 'You currently have an active appointment',
                 text: 'You can request a new appointment once your current appointment is Done, Disapproved, or Cancelled.',
                 confirmButtonText: 'OK',

@@ -36,7 +36,7 @@ class UserController extends Controller
         })
         ->where('employee.campus', session('campus'))
         ->when($search === '', function ($query) {
-          $query->whereRaw('1 = 0');
+          $query->whereNotNull('account.employee_id');
         })
         ->when($search !== '', function ($query) use ($search) {
           $query->where(function ($employeeQuery) use ($search) {
@@ -54,12 +54,19 @@ class UserController extends Controller
           'employee.MiddleName',
           'employee.LastName',
           'employee.EmailAddress',
-          'account.role as clinic_role'
+          DB::raw("GROUP_CONCAT(DISTINCT account.role ORDER BY account.role SEPARATOR ', ') as clinic_role")
+        )
+        ->groupBy(
+          'employee.id',
+          'employee.AgencyNumber',
+          'employee.FirstName',
+          'employee.MiddleName',
+          'employee.LastName',
+          'employee.EmailAddress'
         )
         ->orderBy('employee.LastName')
         ->orderBy('employee.FirstName')
-        ->paginate(12)
-        ->appends(['search' => $search]);
+        ->get();
 
       return view('pages.clinic-account-search', compact('pageConfigs', 'breadcrumbs', 'employees', 'search'));
     }
@@ -114,12 +121,21 @@ class UserController extends Controller
         ->whereIn('campus', [1, 2, 3, 4, 5, 6])
         ->get();
 
-      $account = $accounts->firstWhere('campus', session('campus')) ?: $accounts->first();
-      $accountCampusIds = $accounts->pluck('campus')->map(function ($campus) {
-        return (int) $campus;
+      $roles = ['Admin', 'Attendant', 'Dentist', 'Doctor', 'Nurse', 'Nurse Attendant'];
+      $roleAssignments = collect($roles)->mapWithKeys(function ($role) use ($accounts) {
+        $roleAccounts = $accounts->filter(function ($account) use ($role) {
+          return in_array($role, RoleController::accountRoles($account->role), true);
+        });
+
+        return [$role => [
+          'selected' => $roleAccounts->isNotEmpty(),
+          'campuses' => $roleAccounts->pluck('campus')->map(function ($campus) {
+            return (int) $campus;
+          })->unique()->values()->all(),
+        ]];
       })->all();
 
-      $roles = ['Admin', 'Attendant', 'Dentist', 'Doctor', 'Nurse', 'Nurse Attendant'];
+      $account = $accounts->first();
       $supportsAccessPeriod = Schema::hasColumn('account', 'access_start')
         && Schema::hasColumn('account', 'access_end');
       $pageConfigs = ['pageHeader' => true];
@@ -130,7 +146,7 @@ class UserController extends Controller
       ];
 
       return view('pages.clinic-account-manage', compact(
-        'pageConfigs', 'breadcrumbs', 'employeeRecord', 'account', 'accountCampusIds', 'roles', 'supportsAccessPeriod'
+        'pageConfigs', 'breadcrumbs', 'employeeRecord', 'account', 'roles', 'roleAssignments', 'supportsAccessPeriod'
       ));
     }
 
@@ -144,54 +160,89 @@ class UserController extends Controller
 
       abort_if(!$employeeRecord, 404, 'Employee not found.');
 
+      $allowedRoles = ['Admin', 'Attendant', 'Dentist', 'Doctor', 'Nurse', 'Nurse Attendant'];
+
       $validated = $request->validate([
-        'role' => ['required', Rule::in(['Admin', 'Attendant', 'Dentist', 'Doctor', 'Nurse', 'Nurse Attendant'])],
-        'campuses' => ['required', 'array', 'min:1'],
-        'campuses.*' => ['integer', Rule::in([1, 2, 3, 4, 5, 6])],
+        'assignments' => ['required', 'array'],
+        'assignments.*.selected' => ['nullable', 'accepted'],
+        'assignments.*.campuses' => ['nullable', 'array'],
+        'assignments.*.campuses.*' => ['integer', Rule::in([1, 2, 3, 4, 5, 6])],
         'access_start' => ['nullable', 'date'],
         'access_end' => ['nullable', 'date', 'after_or_equal:access_start'],
       ]);
+
+      $selectedAssignments = collect($validated['assignments'])
+        ->only($allowedRoles)
+        ->filter(function ($assignment) {
+          return !empty($assignment['selected']);
+        });
+
+      if ($selectedAssignments->isEmpty()) {
+        return back()->withInput()->withErrors(['assignments' => 'Select at least one account role.']);
+      }
+
+      foreach ($selectedAssignments as $role => $assignment) {
+        if (empty($assignment['campuses'])) {
+          return back()->withInput()->withErrors([
+            "assignments.{$role}.campuses" => "Select at least one campus for {$role}.",
+          ]);
+        }
+
+      }
 
       $accountValues = [
         'firstname' => $employeeRecord->FirstName,
         'middlename' => $employeeRecord->MiddleName,
         'lastname' => $employeeRecord->LastName,
         'email' => $employeeRecord->EmailAddress,
-        'role' => $validated['role'],
         'deleted_at' => null,
         'updated_at' => Carbon::now('Asia/Manila'),
       ];
 
-      if (Schema::hasColumn('account', 'access_start') && Schema::hasColumn('account', 'access_end')) {
-        $accountValues['access_start'] = $validated['access_start'] ?? null;
-        $accountValues['access_end'] = $validated['access_end'] ?? null;
+      $supportsAccessPeriod = Schema::hasColumn('account', 'access_start')
+        && Schema::hasColumn('account', 'access_end');
+
+      // Group all selected roles by campus so each employee/campus has one row.
+      $rolesByCampus = [];
+      foreach ($selectedAssignments as $role => $assignment) {
+        foreach ($assignment['campuses'] as $campus) {
+          $rolesByCampus[(int) $campus][] = $role;
+        }
       }
 
-      $selectedCampuses = collect($validated['campuses'])->map(function ($campus) {
-        return (int) $campus;
-      })->unique()->values();
-
-      DB::transaction(function () use ($employeeRecord, $accountValues, $selectedCampuses) {
-        foreach ($selectedCampuses as $campus) {
-          DB::table('account')->updateOrInsert(
-            ['employee_id' => $employeeRecord->id, 'campus' => $campus],
-            $accountValues
-          );
-        }
-
+      DB::transaction(function () use ($employeeRecord, $accountValues, $rolesByCampus, $supportsAccessPeriod, $validated) {
         DB::table('account')
           ->where('employee_id', $employeeRecord->id)
           ->whereIn('campus', [1, 2, 3, 4, 5, 6])
-          ->whereNotIn('campus', $selectedCampuses->all())
+          ->whereNotIn('campus', array_keys($rolesByCampus))
           ->whereNull('deleted_at')
           ->update([
             'deleted_at' => Carbon::now('Asia/Manila'),
             'updated_at' => Carbon::now('Asia/Manila'),
           ]);
+
+        foreach ($rolesByCampus as $campus => $selectedRoles) {
+          $selectedRoles = array_values(array_unique($selectedRoles));
+          $hasAdminRole = in_array('Admin', $selectedRoles, true);
+
+          $values = array_merge($accountValues, [
+            'role' => json_encode($selectedRoles),
+          ]);
+
+          if ($supportsAccessPeriod) {
+            $values['access_start'] = $hasAdminRole ? null : ($validated['access_start'] ?? null);
+            $values['access_end'] = $hasAdminRole ? null : ($validated['access_end'] ?? null);
+          }
+
+          DB::table('account')->updateOrInsert(
+            ['employee_id' => $employeeRecord->id, 'campus' => $campus],
+            $values
+          );
+        }
       });
 
-      return redirect()->route('clinic-accounts.index', ['search' => $employeeRecord->AgencyNumber])
-        ->with('success', 'Clinic account role and campus access saved successfully.');
+      return redirect()->route('clinic-accounts.manage', $employeeRecord->id)
+        ->with('success', 'Clinic account roles and access period saved successfully.');
     }
 
     private function authorizeAccountManagement()

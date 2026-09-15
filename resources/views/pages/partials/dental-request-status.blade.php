@@ -150,9 +150,15 @@
     <span class="request-pill {{ str_replace(' ', '-', $requestStatus) }}">{{ $requestLabel }}</span>
   </div>
   <div class="request-schedule">
-    <div><b>Requested schedule:</b> {{ $requestPurpose ?: 'Dental appointment' }}</div>
+   <div><b>Requested schedule:</b> {{ implode(', ', json_decode($requestPurpose, true) ?? []) ?: 'Dental appointment' }}</div>
     <div class="request-meta">
-      <span><i class="fa fa-calendar"></i> {{ $appointment->date ? $appointment->date->format('M d, Y') : '—' }}</span>
+      <span>
+    <i class="fa fa-calendar"></i>
+    {{ $appointment->date 
+        ? \Carbon\Carbon::parse($appointment->date)->format('M d, Y') 
+        : '—' 
+    }}
+</span>
       <span><i class="fa fa-clock-o"></i> {{ $appointment->time ? \Carbon\Carbon::parse($appointment->time)->format('h:i A') : '—' }}</span>
     </div>
     @if(in_array($requestStatus, ['cancelled', 'disapproved', 'rescheduled'], true))

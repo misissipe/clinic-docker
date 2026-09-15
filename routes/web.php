@@ -81,6 +81,9 @@ Route::get('/page-maintenance','MiscellaneousController@maintenancePage')->middl
 //Auth
 Route::get('auth/google', 'AuthenticationController@redirectToGoogle')->name('google.signin'); 
 Route::get('auth/google/callback', 'AuthenticationController@handleGoogleCallback');
+Route::get('/choose-workspace', 'RoleController@index')->name('workspace.choose');
+Route::post('/choose-workspace', 'RoleController@select')->name('workspace.select');
+Route::get('/choose-workspace/sign-out', 'AuthenticationController@fullLogout')->name('workspace.logout');
 
 Auth::routes();
 
