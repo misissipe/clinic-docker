@@ -1,9 +1,6 @@
 {
   "menu": [
-    {
-      "navheader": "Doctor"
-    },
-    {
+     {
       "url": "/",
       "name": "Dashboard",
       "i18n": "Dashboard",
@@ -11,33 +8,20 @@
       "icon": "desktop"
     },
     {
+      "navheader": "Doctor"
+    },
+   
+    {
       "url": "doctor-consultations",
       "name": "Consultations",
       "i18n": "User",
       "icon": "user"
     },
     {
-      "url": "patient-view-record",
-      "name": "Medical Record",
-      "i18n": "User",
-      "icon": "pulse"
-    },
-    {
       "url": "view-generated-slip",
-      "name": "Generated Document ",
+      "name": "Pending Referral Slip",
       "i18n": "User",
-      "icon": "list",
-      "submenu":[
-      {
-        "url": "view-generated-slip",
-        "name": "Referral Slip"
-      }]
-    },
-    {
-      "url": "view-return-slip",
-      "name": "Return Slip",
-      "i18n": "User",
-      "icon": "download"
+      "icon": "morph-folder"
     }
   ]
 }

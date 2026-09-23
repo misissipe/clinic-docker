@@ -136,6 +136,7 @@
                     $medicine['route'] ?? null,
                     $medicine['frequency'] ?? null,
                     $medicine['duration'] ?? null,
+                    $medicine['when_to_take'] ?? null,
                   ])) }}
                 </div>
               </li>

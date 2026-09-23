@@ -72,7 +72,7 @@
     text-transform:uppercase}.status-filter b{display:block;color:#10275b;font-size:25px;line-height:1.1;margin-top:8px}
   .status-filter.for-approval{border-left:4px solid #f07800;background:#fff8ed}.status-filter.pending{border-left:4px solid #e09a00}.status-filter.approved{border-left:4px solid #159751}.status-filter.disapproved{border-left:4px solid #cf3347}.status-filter.rescheduled{border-left:4px solid #7953c6}.status-filter.no-show{border-left:4px solid #d35b21}.status-filter.done{border-left:4px solid #16836b}.status-filter.cancelled{border-left:4px solid #8a96aa}.status-filter.all{border-left:4px solid #0758e8}
   .status-panel{background:#fff;border:1px solid #dfe7f3;border-radius:15px;box-shadow:0 6px 22px rgba(18,48,96,.06);overflow:hidden}
-  .status-toolbar{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:17px 19px;border-bottom:1px solid #e5ebf4}.status-toolbar h3{font-size:17px;font-weight:800;margin:0}.status-toolbar-controls{display:flex;align-items:center;justify-content:flex-end;gap:8px}.status-select,.status-search{height:40px;background:#fff;border:1px solid #d7e0ee;border-radius:9px;padding:0 12px;color:#10275b}.status-select{min-width:125px}.status-search{width:270px;max-width:100%}
+  .status-toolbar{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:17px 19px;border-bottom:1px solid #e5ebf4}.status-toolbar h3{font-size:17px;font-weight:800;margin:0}.status-search{width:270px;max-width:100%;border:1px solid #d7e0ee;border-radius:9px;padding:9px 12px}
   .status-table-wrap{overflow-x:auto}.status-table{width:100%;border-collapse:collapse}.status-table th{background:#f5f8fd;color:#596984;font-size:11px;text-transform:uppercase;letter-spacing:.03em;text-align:left;padding:12px 14px}.status-table td{border-top:1px solid #edf1f7;padding:13px 14px;vertical-align:middle}.status-table tbody tr:hover{background:#fbfdff}
   .patient-name{font-weight:750;color:#10275b}.patient-meta,.service-meta{color:#71809a;font-size:11px;margin-top:3px}.service-name{font-weight:650;color:#344b70;max-width:260px}.remarks-cell{color:#52617b;max-width:220px;white-space:normal}
   .status-pill{display:inline-block;border-radius:20px;padding:5px 10px;font-size:14px;font-weight:800;}.status-pill.for-approval{background:#ffe0b2;color:#9a4300;border:1px solid #ffbd66}.status-pill.pending{background:#fff2cf;color:#865a00}.status-pill.approved{background:#e0f5e8;color:#14743d}.status-pill.disapproved{background:#ffe5e8;color:#b42335}.status-pill.rescheduled{background:#f1eaff;color:#6440ad}.status-pill.no-show{background:#fff0e8;color:#a33c10}.status-pill.done{background:#def7f0;color:#116b59}.status-pill.cancelled,.status-pill.canceled{background:#edf0f4;color:#596984}
@@ -80,7 +80,7 @@
   .reschedule-fields{display:grid;grid-template-columns:1fr 1fr;gap:12px;text-align:left;margin-top:12px}.reschedule-fields label{display:block;color:#52617b;font-size:12px;font-weight:700;margin-bottom:5px}.reschedule-fields input{width:100%;border:1px solid #d7e0ee;border-radius:8px;padding:9px 10px;color:#10275b}
   .status-empty{text-align:center;color:#7b879c;padding:35px!important}
   @media(max-width:1100px){.status-cards{grid-template-columns:repeat(4,1fr)}}
-  @media(max-width:650px){.status-head,.status-toolbar{align-items:flex-start;flex-direction:column}.status-cards{grid-template-columns:repeat(2,1fr)}.status-toolbar-controls{width:100%;flex-wrap:wrap;justify-content:flex-start}.status-select{flex:1}.status-search{width:100%}}
+  @media(max-width:650px){.status-head,.status-toolbar{align-items:flex-start;flex-direction:column}.status-cards{grid-template-columns:repeat(2,1fr)}.status-search{width:100%}}
 </style>
 @endsection
 
@@ -118,31 +118,17 @@
   </div>
 
   <div class="status-cards" role="group" aria-label="Filter appointments by status">
-    <button type="button" class="status-filter pending" data-filter="pending"><span>Pending</span><b>{{ $statusCounts['pending'] }}</b></button>
+    <button type="button" class="status-filter pending active" data-filter="pending"><span>Pending</span><b>{{ $statusCounts['pending'] }}</b></button>
     <button type="button" class="status-filter approved" data-filter="approved"><span>Approved</span><b>{{ $statusCounts['approved'] }}</b></button>
     <button type="button" class="status-filter disapproved" data-filter="disapproved"><span>Disapproved</span><b>{{ $statusCounts['disapproved'] }}</b></button>
     <button type="button" class="status-filter rescheduled" data-filter="rescheduled"><span>Rescheduled</span><b>{{ $statusCounts['rescheduled'] }}</b></button>
-    <button type="button" class="status-filter all active" data-filter="all"><span>All Requests</span><b>{{ $statusCounts['all'] }}</b></button>
+    <button type="button" class="status-filter all" data-filter="all"><span>All Requests</span><b>{{ $statusCounts['all'] }}</b></button>
   </div>
 
   <div class="status-panel">
     <div class="status-toolbar">
-      <h3 id="statusListTitle">All Appointment Requests</h3>
-      <div class="status-toolbar-controls">
-        <select id="statusMonth" class="status-select" aria-label="Filter by month">
-          <option value="">All months</option>
-          @foreach(range(1, 12) as $month)
-            <option value="{{ $month }}">{{ date('F', mktime(0, 0, 0, $month, 1)) }}</option>
-          @endforeach
-        </select>
-        <select id="statusYear" class="status-select" aria-label="Filter by year">
-          <option value="">All years</option>
-          @foreach($statusAppointments->filter(function ($appointment) { return !empty($appointment->date); })->map(function ($appointment) { return date('Y', strtotime($appointment->date)); })->unique()->sortDesc() as $year)
-            <option value="{{ $year }}">{{ $year }}</option>
-          @endforeach
-        </select>
-        <input id="statusSearch" class="status-search" type="search" placeholder="Search patient, ID, type, service, or remarks">
-      </div>
+      <h3 id="statusListTitle">Pending Appointment Requests</h3>
+      <input id="statusSearch" class="status-search" type="search" placeholder="Search patient, ID, type, service, or remarks">
     </div>
     <div class="status-table-wrap">
       <table id="statusAppointmentsTable" class="status-table">
@@ -160,7 +146,7 @@
         <tbody id="statusRows">
           @foreach($statusAppointments as $data)
             @php($statusKey = in_array($data->status, ['Pending', 'For Approval'], true) ? 'pending' : (in_array($data->status, ['Cancelled', 'Canceled'], true) ? 'cancelled' : str_replace(' ', '-', strtolower((string) $data->status))))
-            <tr data-status="{{ $statusKey }}" data-month="{{ $data->date ? (int) date('n', strtotime($data->date)) : '' }}" data-year="{{ $data->date ? date('Y', strtotime($data->date)) : '' }}" data-search="{{ strtolower(trim($data->firstname.' '.$data->middlename.' '.$data->lastname).' '.$data->patientId.' '.$data->role.' '.$formatPurpose($data->purpose).' '.($data->remarks ?? '')) }}">
+            <tr data-status="{{ $statusKey }}" data-search="{{ strtolower(trim($data->firstname.' '.$data->middlename.' '.$data->lastname).' '.$data->patientId.' '.$data->role.' '.$formatPurpose($data->purpose).' '.($data->remarks ?? '')) }}">
               <td>
                 <div class="patient-name">{{ trim($data->firstname.' '.$data->middlename.' '.$data->lastname) }}</div>
                 <div class="patient-meta">{{ $data->contactNo ?: 'No contact number' }}</div>
@@ -224,7 +210,7 @@
 @section('page-scripts')
 <script>
 $(function () {
-  var currentFilter = 'all';
+  var currentFilter = 'pending';
   var titles = {
     pending:'Pending Appointments',
     approved:'Approved Appointments',
@@ -246,14 +232,8 @@ $(function () {
 
   $.fn.dataTable.ext.search.push(function (settings, data, dataIndex) {
     if (settings.nTable.id !== 'statusAppointmentsTable') return true;
-    var row = $(statusTable.row(dataIndex).node());
-    var rowStatus = row.data('status');
-    var selectedMonth = $('#statusMonth').val();
-    var selectedYear = $('#statusYear').val();
-    var matchesStatus = currentFilter === 'all' || rowStatus === currentFilter;
-    var matchesMonth = !selectedMonth || String(row.data('month')) === selectedMonth;
-    var matchesYear = !selectedYear || String(row.data('year')) === selectedYear;
-    return matchesStatus && matchesMonth && matchesYear;
+    var rowStatus = $(statusTable.row(dataIndex).node()).data('status');
+    return currentFilter === 'all' || rowStatus === currentFilter;
   });
 
   function applyFilters() {
@@ -269,7 +249,6 @@ $(function () {
     applyFilters();
   });
   $('#statusSearch').on('input', applyFilters);
-  $('#statusMonth, #statusYear').on('change', applyFilters);
   applyFilters();
 
   function updateStatus(id, status, remarks) {

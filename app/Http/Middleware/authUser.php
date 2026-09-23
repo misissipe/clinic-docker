@@ -17,6 +17,10 @@ class authUser
     {
         $token = session('role');
         if (empty($token)){
+            if ($request->is('dental-*')) {
+                return redirect()->route('dental.login');
+            }
+
             return redirect('login');
         }
 

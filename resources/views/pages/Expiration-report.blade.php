@@ -6,36 +6,11 @@
 @section('vendor-styles')
 <link rel="stylesheet" type="text/css" href="{{asset('vendors/css/tables/datatable/datatables.min.css')}}">
 <style>
-     @font-face {
-    font-family: 'Aptos';
-    src: url("file://{{ public_path('fonts/Aptos-Regular.ttf') }}") format('truetype');
-    font-weight: 400;
-    font-style: normal;
-}
-
-@font-face {
-    font-family: 'Aptos';
-    src: url("file://{{ public_path('fonts/Aptos-Bold.ttf') }}") format('truetype');
-    font-weight: 700;
-    font-style: normal;
-}
-
-@font-face {
-    font-family: 'Aptos';
-    src: url("file://{{ public_path('fonts/Aptos-Italic.ttf') }}") format('truetype');
-    font-weight: 400;
-    font-style: italic;
-}
-
-.aptos {
-    font-family: 'Aptos';
-}
-
   table,td,tr{
   border: 1px solid rgb(226, 222, 222);
   border-collapse: collapse;
   padding: 1px;
-   } 
+   }
    input {
    outline: 0;
    border-width: 0 0 0px;
@@ -107,7 +82,7 @@
 
 <!-- Zero configuration table -->
 <section id="basic-datatable">
-  <div class="row aptos">
+  <div class="row">
     <div class="col-12">
       <div class="card active">
         <div class="card-content">
@@ -120,12 +95,6 @@
                   <i class="bx bx-calendar-event align-middle"></i>
                   <span class="align-middle">All Records</span>
                   <span class="badge badge-danger"></span>
-                  {{-- <span class="red-box" id="student-status"></span>  --}}
-                </a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" id="print-tab" data-toggle="tab" href="#printMe" aria-controls="print" role="tab" aria-selected="false" style="display : none" >
-                <span class="align-middle">print</span>
                 </a>
               </li>
             </ul>
@@ -135,7 +104,7 @@
                   <div class="btnprint">
                     <form action="/" method="get" target="_blank" class="float-right">
                       <button type="submit" class="btn btn-primary" id="submitToGenerate" style="font-size: 15px; color: rgb(255, 255, 255);">
-                          Print
+                        Print
                       </button>
                   </form>
                 </div>
@@ -166,7 +135,7 @@
                         @endfor
                       </select>
                       <div class="input-group-append">
-                          <button class="btn btn-primary submitBtn" type="submit"><i class="fa fa-search"></i></button>
+                        <button class="btn btn-primary submitBtn" type="submit"><i class="fa fa-search"></i></button>
                       </div>
                     </div>
                   </div>
@@ -183,41 +152,13 @@
                 </table>
               </div>
             </div>
-            <div class="tab-pane" id="printMe" aria-labelledby="print-tab" role="tabpanel">
-              <div class="table-responsive view-all">
-                <div id="printPart">
-                  <div class="col-12  d-flex justify-content-center" >
-                    <img src="{{asset('images/logo/new-SLSU-letter-head.png')}}" style="width: 450px; height: 150px;margin-right:30px">
-                    <img src="{{asset('images/logo/bagong_pilipinas.png')}}" style="width: 120px; height: 120px;">
-                  </div>
-                  <div class="row">
-                    <div class="col-lg-12 d-flex justify-content-center"><p style="font-size: 12px; border-bottom: 1px solid black; text-align:center;color:black;">Excellence | Service | Leadership and Good Governance | Innovation | Social Responsibility | Integrity | Professionalism | Spirituality</p></div>
-                  </div>
-                  <div class="row">
-                    <div class="col-lg-12 d-flex justify-content-center" style="font-weight: 700; font-size: 17px; font-style: bold; text-align:center;color:black;">LOGBOOK (RECORD OF VISIT)</div>
-                  </div><br><br>
-                  <table class="table table-sm recordTable cell-border" id="print">
-                    <input type="hidden" name="firstname" id="roleSelect" value="Employee">
-                    <thead>
-                      <tr>
-                        <th style="color:rgb(0, 0, 0); text-align: center; border: 1px solid rgb(226, 222, 222);">Medicine Name</th>
-                        <th style="color:rgb(0, 0, 0); text-align: center; border: 1px solid rgb(226, 222, 222);">Item Left</th>
-                        <th style="color:rgb(0, 0, 0); text-align: center; border: 1px solid rgb(226, 222, 222);">Expiration Date</th>
-                      </tr>
-                  </thead>
-                  <tbody>
-              
-                  </tbody>
-                </table>
-              </div>
-            </div>
           </div>
+          
         </div>
-       </div>
-      </div>
-    </div> 
+        </div>
+      </div> 
+    </div>
   </div>
-</div>
 </section>
 @endsection
 {{-- vendor scripts --}}
@@ -242,78 +183,57 @@
 <script src="{{asset('js/scripts/datatables/datatable.js')}}"></script>
 <script>
 $.ajaxSetup({ headers : { 'X-CSRF-TOKEN' : $('meta[name="csrf-token"]').attr('content') }});
-  var patientId = 0;
-//Search-Input
-//  $(document).ready(function() {
-//   $("#submitBtn").submit(function() {
-//      event.preventDefault();
-//     var search = $('#searchInput').val();
-//          $.ajax({
-//             type:'post',
-//             url:'/dental-records',
-//             data:{search:search},
+var patientId = 0;
 
-//             success:function(data){
-//               $('#myTable').html(data);   
-//             } 
-//          })
-//        })
-//  });
-
-//Search-Input
 var table = $('#preView').DataTable({
         "order": [[0, "desc"]],
     });
-    $(document).ready(function() {
-    $(document).on('submit', '#submitBtn', function(event) {
-        event.preventDefault();
-        var monthSearch = $('#monthSearch').val();
-        
-        var year = $('#year').val();
-        var role =  $('#roleSelect').val();
-       
-        $.ajax({
-            url: '/search-medicine', 
-            type: 'POST',
-            data: {
-                'monthSearch': monthSearch,
-                'year': year,
-            },
-            success: function(data) {
-                table.clear();
-
-                if (data.length > 0) {
-                $.each(data, function(index, record) {
-  
-                    table.row.add([
-                       
-                         record.item_name,
-                        '<div class="text-right">' + record.item_quantity + '</div>',
-                        '<div class="text-center">' + record.expiration_date + '</div>',
-                
-                    ]).draw();
-                });
-              }
-
-              table.draw();
-              table.$('tr').addClass('tr');
-           }
-        });
-    });
-});
-
 
 $(document).ready(function() {
-    $('#submitToGenerate').click(function(event) {
-        event.preventDefault(); 
-  
-        var monthSearch = $('#monthSearch').val();
-        var year = $('#year').val();
-      
-        window.location.href = `/expired-medicine-report?monthSearch=${monthSearch}&year=${year}`;
+  $(document).on('submit', '#submitBtn', function(event) {
+    event.preventDefault();
+    var monthSearch = $('#monthSearch').val();
+    
+    var year = $('#year').val();
+    var role =  $('#roleSelect').val();
+       
+    $.ajax({
+      url: '/search-medicine', 
+      type: 'POST',
+      data: {
+          'monthSearch': monthSearch,
+          'year': year,
+      },
+      success: function(data) {
+        table.clear();
+
+        if (data.length > 0) {
+          $.each(data, function(index, record) {
+
+            table.row.add([
+              record.item_name,
+              '<div class="text-right">' + record.item_quantity + '</div>',
+              '<div class="text-center">' + record.expiration_date + '</div>',
+            ]).draw();
+          });
+        }
+        table.draw();
+        table.$('tr').addClass('tr');
+      }
     });
+  });
 });
 
+$(document).ready(function() {
+  $('#submitToGenerate').click(function(event) {
+    event.preventDefault(); 
+
+    var monthSearch = $('#monthSearch').val();
+    var year = $('#year').val();
+  
+    window.location.href = `/expired-medicine-report?monthSearch=${monthSearch}&year=${year}`;
+  });
+});
 
 $(document).ready(function() {
   $('#disToday').DataTable({
@@ -321,92 +241,5 @@ $(document).ready(function() {
   });
 });  
 
-
-
-$(document).ready(function() {
-  $("#Disapprove").change(function() {
-    var selectedRole = $(this).val();
-
-    if (selectedRole === "Today") {
-        $("#viewDisapprove").hide();
-        $("#todayDisapprove").removeAttr("style").hide().show();
-    } else if (selectedRole === "All") {
-        $("#todayDisapprove").hide();
-        $("#viewDisapprove").removeAttr("style").hide().show();
-    } else {
-        alert("Please select a valid role");
-    }
-  });
-});
-
-// Save SWAL ALERT
- $("#saveTab").submit(function(e) {
-  e.preventDefault();
-
-  var form = $(this);
-  var actionUrl = form.attr('action');
-  var role = $('#roleSelect').val();
-
-  $.ajax({
-    type: "POST",
-    url: actionUrl,
-    data: form.serialize(), 
-    success: function(response){
-      if (response.status == 200) {
-        Swal.fire({
-          title: response['success'],
-          icon: 'success',
-          confirmButtonText: 'Okay',
-      }).then((response1) => {
-              
-     if (response1.isConfirmed) {
-      // var role = response.role;
-
-      //   if (role === 'Student') {
-      //     window.location.href = "/patient-record?StudentId=" + encodeURIComponent(response.newId) + "&role=Student";
-      //   } else if (role === 'Employee') {
-      //     window.location.href = "/patient-record?EmpployeeId=" + encodeURIComponent(response.newId) + "&role=Employee";
-      //   }  
-      location.reload(); 
-      }
-      })
-      console.log(response); 	
-      }
-      else if(response.error== 'Duplicate'){
-        Swal.fire({
-        title: response['error'],
-        icon: 'error',
-        confirmButtonText: 'Okay',
-      }).then((response) => {
-
-      if (response.isConfirmed) {
-        location.reload()
-      }
-    })
-   }
-  }
-  });
-});
-
-//Print 
-document.getElementById("btnPrint").onclick = function () {
-      printElement(document.getElementById("printPart"));
-  }
-
-  function printElement(elem) {
-      var domClone = elem.cloneNode(true);
-      
-      var $printSection = document.getElementById("printSection");
-      
-      if (!$printSection) {
-          var $printSection = document.createElement("div");
-          $printSection.id = "printSection";
-          document.body.appendChild($printSection);
-      }
-      
-      $printSection.innerHTML = "";
-      $printSection.appendChild(domClone);
-      window.print();
-  } 
 </script>
 @endsection

@@ -5,6 +5,7 @@
 {{-- vendor style --}}
 @section('vendor-styles')
 <link rel="stylesheet" type="text/css" href="{{asset('vendors/css/tables/datatable/datatables.min.css')}}">
+<link rel="stylesheet" href="{{ asset('css/pages/monitoring-history.css') }}?v={{ filemtime(public_path('css/pages/monitoring-history.css')) }}">
 <style>
   table,td{
  border: 1px solid rgb(58, 57, 57);
@@ -204,41 +205,7 @@
       </div>
     </div>
     <div class="col-md-5">
-      <div class="card text-left">
-        <div class="card-body" style="font-size:12px">
-          <label for="purpose" style="display: inline-block;font-size:20px;font-weight:700">PREVIOUS CONSULTATION</label>
-          <div class=" view-all">
-            <div class="table-responsive">
-              <table class="table table-sm recordTable table-bordered table-striped" id="recordTable">
-                <thead> 
-                  <tr>
-                    <th style="color:white;text-align:center">Date</th> 
-                    <th style="color:white;text-align:center">Purpose</th>
-                    <th style="color:white;text-align:center">Findings</th>
-                    <th style="color:white;text-align:center">Parameters</th>
-                    <th style="color:white;text-align:center">Treatment</th>
-                  </tr>
-                </thead>
-                <tbody id="viewAllRecord">
-                  @foreach ($view as $data)
-                  <tr>
-                    <td style="text-align:center">{{ date('m-d-Y', strtotime($data->date)) }}</td>
-                    <td>{{ implode(', ', json_decode($data->purpose)) }}</td> 
-                    <td>{{ $data->findings  }}</td>
-                    <td style="text-align:left">
-                      {!! $data->parameters
-                          ? $data->parameters
-                          : "W: $data->weight <br> H: $data->height <br> B-Type: $data->blood_type <br> Temp: $data->temp <br> Pulse: $data->pulse <br> Res Rate: $data->res_rate <br> BP: $data->bp" !!}
-                    </td>                               
-                    <td>{{ $data->recommendation }}</td>
-                  </tr>
-                  @endforeach
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      </div>
+      @include('pages.partials.monitoring-consultation-history')
     </div>
   </div>
 </section>
@@ -272,6 +239,8 @@ $('#recordTable').DataTable({
     "columnDefs": [
         { "type": "date", "targets": 0 }
     ],
+    "pageLength": 3,
+    "autoWidth": false,
     "lengthMenu": [3, 5, 10, 25, 50, 100]
 });
 

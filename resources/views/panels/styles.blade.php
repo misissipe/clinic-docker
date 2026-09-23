@@ -38,3 +38,5 @@
     <link rel="stylesheet" type="text/css" href="{{asset('assets/css/style-rtl.css')}}">
     @endif
     <!-- END: Custom CSS-->
+
+    <link rel="stylesheet" href="{{ asset('css/project-lists.css') }}?v={{ filemtime(public_path('css/project-lists.css')) }}">

@@ -60,10 +60,26 @@
   color: #66758f;
 }
 
-.close-button {
+.header-actions {
   position: absolute;
   top: 6px;
   right: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.btn.account-delete-button {
+  height: 42px;
+  margin-top: 21px;
+  padding: 0 16px;
+  color: #fff;
+  background: #dc3545;
+  border: 0;
+  border-radius: 8px;
+}
+
+.close-button {
   width: 42px;
   height: 42px;
   display: grid;
@@ -169,6 +185,13 @@
   color: #14213a;
   font-size: 20px;
   font-weight: 600;
+}
+
+.roles-tools {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
 }
 
 .date-tip {
@@ -299,6 +322,11 @@
     flex-direction: column;
   }
 
+  .roles-tools {
+    width: 100%;
+    align-items: flex-start;
+  }
+
   .roles-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -315,8 +343,12 @@
   }
 
   .account-header h1 {
-    padding-right: 42px;
+    padding-right: 190px;
     font-size: 23px;
+  }
+
+  .btn.account-delete-button {
+    padding: 0 10px;
   }
 
   .account-dates,

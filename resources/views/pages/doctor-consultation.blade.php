@@ -17,7 +17,7 @@
 @endphp
 
 @section('content')
-<link rel="stylesheet" href="{{ asset('css/pages/doctor-consultation.css') }}">
+<link rel="stylesheet" href="{{ asset('css/pages/doctor-consultation.css') }}?v={{ filemtime(public_path('css/pages/doctor-consultation.css')) }}">
 <form method="POST"
       action="{{ route('medical.doctor-consultation.save', $medical->id) }}"
       id="consultationForm"
@@ -183,6 +183,55 @@
         <button type="submit" id="saveConsultation" class="btn btn-deep">Save Consultation</button>
       </div>
     </section>
+    <aside class="consultation-history" aria-labelledby="historyHeading">
+      <div class="history-heading">
+        <h4 id="historyHeading">Previous Consultations</h4>
+        <p>{{ $patientName }}</p>
+      </div>
+      <div class="history-table-area">
+        <table id="previousConsultationsTable" class="history-table">
+          <thead>
+            <tr><th>Date</th><th>Purpose</th><th>Findings</th><th>Parameters</th><th>Treatment</th></tr>
+          </thead>
+          <tbody>
+            @foreach ($previousConsultations as $previous)
+              @php
+                $previousPurposes = json_decode($previous->purpose, true) ?: [];
+                $visitMedicines = $previousMedicines->get($previous->id, collect());
+              @endphp
+              <tr>
+                <td data-order="{{ $previous->date }}">{{ \Carbon\Carbon::parse($previous->date)->format('m-d-Y') }}</td>
+                <td>{{ implode(', ', $previousPurposes) ?: 'Consultation' }}</td>
+                <td class="history-text">{{ $previous->findings ?: '—' }}</td>
+                <td class="history-parameters">
+                  <div>W: {{ $previous->weight ? $previous->weight . ' kg' : '—' }}</div>
+                  <div>H: {{ $previous->height ? $previous->height . ' cm' : '—' }}</div>
+                  <div>B-Type: {{ $previous->blood_type ?: '—' }}</div>
+                  <div>Temp: {{ $previous->temp ?: '—' }}</div>
+                  <div>Pulse: {{ $previous->pulse ?: '—' }}</div>
+                  <div>Res Rate: {{ $previous->res_rate ?: '—' }}</div>
+                  <div>BP: {{ $previous->bp ?: '—' }}</div>
+                </td>
+                <td>
+                  <div class="history-text">{{ $previous->recommendation }}</div>
+                  @if ($visitMedicines->isNotEmpty())
+                    <details class="history-prescription">
+                      <summary>Prescription</summary>
+                      @foreach ($visitMedicines as $medicine)
+                        <p><strong>{{ $medicine->medicine_name }}</strong> (Qty: {{ $medicine->quantity }})<br>{{ implode(' · ', array_filter([$medicine->dose, $medicine->route, $medicine->frequency, $medicine->duration, $medicine->when_to_take ?? null])) }}</p>
+                      @endforeach
+                      @if ($visitMedicines->first()->instruction)
+                        <p class="history-text">{{ $visitMedicines->first()->instruction }}</p>
+                      @endif
+                    </details>
+                  @endif
+                </td>
+              </tr>
+            @endforeach
+          </tbody>
+        </table>
+      </div>
+    </aside>
   </div>
 </form>
 {{-- Medicine form markup used by the Add Medicine button. --}}
@@ -276,6 +325,23 @@
         <input name="medicine_duration[]" class="form-control med-duration" placeholder="5 days">
       </div>
 
+      <div>
+        <label class="mini-label">When to take</label>
+        <select name="medicine_when_to_take[]" class="form-control med-when-to-take">
+          <option value="">Select when to take</option>
+          <option>Before meals</option>
+          <option>After meals</option>
+          <option>With meals</option>
+          <option>Before breakfast</option>
+          <option>After breakfast</option>
+          <option>Before lunch</option>
+          <option>After lunch</option>
+          <option>Before dinner</option>
+          <option>After dinner</option>
+          <option>At bedtime</option>
+        </select>
+      </div>
+
       <div class="medicine-stock-status">
         <span class="stock-warning">Low stock!</span>
         <span class="stock-left"></span>
@@ -337,6 +403,7 @@ $.ajaxSetup({ headers : { 'X-CSRF-TOKEN' : $('meta[name="csrf-token"]').attr('co
       var route = row.querySelector('.med-route').value;
       var frequency = row.querySelector('.med-frequency').value;
       var duration = row.querySelector('.med-duration').value;
+      var whenToTake = row.querySelector('.med-when-to-take').value;
       var previewItem = document.createElement('li');
 
       var direction = 'Take ' + safe(dose);
@@ -344,6 +411,7 @@ $.ajaxSetup({ headers : { 'X-CSRF-TOKEN' : $('meta[name="csrf-token"]').attr('co
       if (route) direction += ' by ' + safe(route.toLowerCase());
       if (frequency) direction += ' ' + safe(frequency.toLowerCase());
       if (duration) direction += ' for ' + safe(duration.toLowerCase());
+      if (whenToTake) direction += ' · ' + safe(whenToTake);
 
       previewItem.innerHTML = '<strong>' + safe(name) + '</strong><br>' + direction + '.';
       previewList.appendChild(previewItem);
@@ -354,6 +422,19 @@ $.ajaxSetup({ headers : { 'X-CSRF-TOKEN' : $('meta[name="csrf-token"]').attr('co
 
   // Medicine inventory search (same approach as Patient Monitoring OTC).
   $(document).ready(function () {
+    $('#previousConsultationsTable').DataTable({
+      pageLength: 3,
+      lengthMenu: [3, 5, 10, 25],
+      order: [[0, 'desc']],
+      autoWidth: false,
+      dom: '<"history-table-controls"lf><"history-table-scroll"t><"history-table-footer"ip>',
+      language: {
+        emptyTable: 'No previous consultations recorded for this patient.',
+        search: 'Search:',
+        lengthMenu: 'Show _MENU_ entries'
+      }
+    });
+
     // Add another medicine card.
     $('#addMedicine').click(function () {
       var medicineCard = $($('#medicineTemplate').html());
@@ -477,6 +558,8 @@ $.ajaxSetup({ headers : { 'X-CSRF-TOKEN' : $('meta[name="csrf-token"]').attr('co
     });
   });
 
+  medicinesContainer.addEventListener('input', refreshPreview);
+  medicinesContainer.addEventListener('change', refreshPreview);
   document.getElementById('patientInstructions').addEventListener('input', refreshPreview);
 
   // Display one form step at a time.

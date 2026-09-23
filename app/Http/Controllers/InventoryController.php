@@ -18,6 +18,7 @@ use Carbon\Carbon;
 use Haruncpi\LaravelIdGenerator\IdGenerator;
 use App\Http\Controllers\AESCipher;
 use Illuminate\Support\Str;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class InventoryController extends Controller
 {
@@ -39,16 +40,25 @@ class InventoryController extends Controller
           ->whereMonth('i.date', $monthNumber)
           ->whereYear('i.date', $year)  
           ->whereNull('i.deleted_at')  
+          ->whereNull('s.deleted_at')
           ->get();
         
       $stock = DB::connection('mysql')->table('stock')
           ->orderby('id','asc')
           ->where('campus', session('campus'))
+          ->where('expiration_date', '>=', Carbon::today()->format('Y-m-d'))
           ->where('item_quantity', '>', 0)
           ->whereNull('deleted_at')
           ->get();
 
-      return view('pages.inventory',['pageConfigs'=>$pageConfigs,'breadcrumbs'=>$breadcrumbs],compact('view','stock','monthName'));
+      $medicines = DB::connection('mysql')->table('stock')
+          ->where('campus', session('campus'))
+          ->whereNull('deleted_at')
+          ->distinct()
+          ->orderBy('item_name')
+          ->pluck('item_name');
+
+      return view('pages.inventory',['pageConfigs'=>$pageConfigs,'breadcrumbs'=>$breadcrumbs],compact('view','stock','monthName','medicines'));
     }
     public function add(Request $request){
        
@@ -122,6 +132,7 @@ class InventoryController extends Controller
         if ($request->ajax()) {
             $monthSearch = $request->input('monthSearch');
             $year = $request->input('year');
+            $medicine = $request->input('medicine');
             
             $search = DB::table('inventory as i')
                         ->join('stock as s','s.id','=','i.stockId')
@@ -130,9 +141,58 @@ class InventoryController extends Controller
                         ->whereMonth('i.date', $monthSearch)
                         ->whereYear('i.date', $year)  
                         ->whereNull('i.deleted_at')  
+                        ->whereNull('s.deleted_at')
+                        ->when($medicine, function ($query) use ($medicine) {
+                            $query->where('s.item_name', $medicine);
+                        })
                         ->get();
 
             return response()->json($search);
         }
     }
+
+    public function generateReportInven(Request $request){
+    $pageConfigs = ['pageHeader' => true];
+    $breadcrumbs = [
+      ["link" => "/", "name" => "Home"],["name" => "Report Dental Services"]
+    ];
+
+   
+      $monthSearch = $request->monthSearch;
+      $year = $request->year;
+
+      $monthNumber = date('n');
+      $monthName = Carbon::create()->month($monthNumber)->format('F');
+      $medicine = $request->input('medicine');
+    
+     $view = DB::table('inventory as i')
+              ->join('stock as s','s.id','=','i.stockId')
+              ->orderby('i.id','desc')
+              ->where('i.campus', session('campus'))
+              ->whereMonth('i.date', $monthSearch)
+              ->whereYear('i.date', $year)  
+              ->whereNull('i.deleted_at')  
+              ->whereNull('s.deleted_at')
+              ->when($medicine, function ($query) use ($medicine) {
+                  $query->where('s.item_name', $medicine);
+              })
+              ->get();
+
+      $medicine_name = $medicine ?: 'All medicines';
+
+      $preparedby = DB::connection('mysql')->table('signatories')
+          ->where('sigtype','Prepared by')
+          ->whereIn('services', ['Medical', 'Medical & Dental'])
+          ->where('campus',session('campus'))
+          ->first();
+
+    
+      $noted = DB::connection('mysql')->table('signatories')
+            ->where('sigtype','Noted by')
+             ->whereIn('services', ['Medical', 'Medical & Dental'])
+            ->where('campus',session('campus'))
+            ->first();
+  
+      return Pdf::loadView('pages.inventory-form',compact('view','preparedby','noted','monthName','medicine_name'))->setPaper('a4')->stream();
+  }
 }

@@ -8,138 +8,6 @@
       "icon": "dashboard"
     },
     {
-      "navheader": "Information"
-    },
-    {
-      "url": "/search-student",
-      "name": "Patient",
-      "i18n": "User",
-      "icon": "notebook",
-      "submenu":[{
-        "url": "/search-student",
-        "name": "Student"
-      },
-      {
-        "url": "/search-employee",
-        "name": "Employee"
-      }]
-    },
-    {
-      "url": "add-doctors",
-      "name": "Doctor",
-      "i18n": "Users",
-      "icon": "users"
-    },
-    {
-      "url": "doctor-leaves",
-      "name": "Doctor Leave",
-      "i18n": "Users",
-      "icon": "calendar"
-    },
-    {
-      "url": "add-signatories",
-      "name": "Signatories",
-      "i18n": "Users",
-      "icon": "pen"
-    },
-    {
-      "navheader": "Medical Services"
-    },
-    {
-      "url": "student-information",
-      "name": "Patient Health History",
-      "i18n": "User",
-      "icon": "desktop",
-      "submenu":[{
-        "url": "student-information",
-        "name": "Student"
-      },
-      {
-        "url": "employee-information",
-        "name": "Employee"
-      }]
-    },
-    {
-      "url": "patient-monitoring-search",
-      "name": "Patient Record",
-      "i18n": "User",
-      "icon": "pulse",
-      "submenu":[{
-        "url": "patient-monitoring-search",
-        "name": "Add New"
-      },
-      {
-        "url": "patient-view-record",
-        "name": "View Record"
-      }]
-    },
-    {
-      "url": "lab-results",
-      "name": "Lab Results",
-      "i18n": "User",
-      "icon": "lab"
-    },
-    {
-      "url": "medical-certificate",
-      "name": "Medical Certificate",
-      "i18n": "User",
-      "icon": "morph-bookmark"
-    }, 
-    {
-      "url": "referral-slip",
-      "name": "Referral Slip",
-      "i18n": "User",
-      "icon": "morph-doc"
-    },
-      {
-      "url": "patient-status",
-      "name": "Status",
-      "i18n": "User",
-      "icon": "box"
-    },
-    {
-      "url": "medical-record-of-visit",
-      "name": "Log Book",
-      "i18n": "User",
-      "icon": "grid",
-      "submenu":[{
-        "url": "medical-record-of-visit",
-        "name": "Record of Visit"
-      },
-      {
-        "url": "/medical-wound-dressing",
-        "name": "Wound Dressing"
-      },
-      {
-        "url": "/medical-blood-pressure",
-        "name": "Blood Pressure"
-      },
-      {
-        "url": "/medical-provision-of-comfort",
-        "name": "Provision of Comfort"
-      },
-      {
-        "url": "/medical-issuance-of-certificate",
-        "name": "Issuance of Certificate"
-      },
-      {
-        "url": "/medical-issuance-of-slip",
-        "name": "Issuance of Slip"
-      },
-      {
-        "url": "/medical-OTC-medicine",
-        "name": "OTC Medicine"
-      },
-      {
-        "url": "/medical-physical-assessment",
-        "name": "Pysical Assessment"
-      },
-      {
-        "url": "/medical-other-concern",
-        "name": "Other Concern"
-      }]
-    },
-    {
       "navheader": "Calendar"
     },
     {
@@ -262,34 +130,21 @@
       }]
     },
     {
-      "navheader": "Inventory"
+      "navheader": "Authorization Setup"
     },
     {
-      "url": "category-product",
-      "name": "Category",
+      "url": "#",
+      "name": "Assignments",
       "i18n": "User",
-      "icon": "list",
-      "submenu":[{
-        "url": "category-product",
-        "name": "Product"
+      "icon": "users",
+      "submenu":[
+      {
+         "url": "add-doctors",
+        "name": "Doctor"
       },
       {
-        "url": "category-measurement",
-        "name": "Measure"
-      }]
-    },
-    {
-      "url": "add-items",
-      "name": "Stock",
-      "i18n": "User",
-      "icon": "morph-folder",
-      "submenu":[{
-        "url": "add-items",
-        "name": "Add Items"
-      },
-      {
-        "url": "inventory",
-        "name": "Inventory"
+        "url": "add-signatories",
+        "name": "Signatories"
       }]
     },
     {

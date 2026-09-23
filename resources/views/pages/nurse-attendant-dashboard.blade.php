@@ -49,7 +49,7 @@
             <hr>  
             <div class="row justify-content-between align-items-center">
                 <h6 class="card-title text-muted mb-0">Records of Visits <b>{{$total_records}}</b></h6>
-                <a href="/medical-record-of-visit" class="card-box-footer ml-auto">View More <i class="fa fa-arrow-circle-right"></i></a>
+                {{-- <a href="/medical-record-of-visit" class="card-box-footer ml-auto">View More <i class="fa fa-arrow-circle-right"></i></a> --}}
             </div>
         </div>
         </div>
@@ -73,7 +73,7 @@
             <hr>
             <div class="d-flex justify-content-between align-items-center">
               <h6 class="card-title text-muted mb-0">Records of Visits <b>{{$total_recordsVisit}}</b></h6>
-              <a href="/records-of-visit" class="card-box-footer" >View More <i class="fa fa-arrow-circle-right"></i></a>
+              {{-- <a href="/records-of-visit" class="card-box-footer" >View More <i class="fa fa-arrow-circle-right"></i></a> --}}
             </div>
           </div>
         </div>
@@ -115,8 +115,8 @@
                 </div>
               </div>
             </div>
-            <hr>
-            <a href="/medical-wound-dressing" class="card-box-footer">View More <i class="fa fa-arrow-circle-right"></i></a>
+            {{-- <hr>
+            <a href="/medical-wound-dressing" class="card-box-footer">View More <i class="fa fa-arrow-circle-right"></i></a> --}}
           </div>
         </div>
       </div>
@@ -134,8 +134,8 @@
                 </div>
               </div>
             </div>
-            <hr>
-            <a href="/medical-issuance-of-certificate" class="card-box-footer">View More <i class="fa fa-arrow-circle-right"></i></a>
+            {{-- <hr>
+            <a href="/medical-issuance-of-certificate" class="card-box-footer">View More <i class="fa fa-arrow-circle-right"></i></a> --}}
           </div>
         </div>
       </div>
@@ -153,8 +153,8 @@
                 </div>
               </div>
             </div>
-            <hr>
-            <a href="/view-appointment" class="card-box-footer">View More <i class="fa fa-arrow-circle-right"></i></a>
+            {{-- <hr>
+            <a href="/view-appointment" class="card-box-footer">View More <i class="fa fa-arrow-circle-right"></i></a> --}}
           </div>
         </div>
       </div>
@@ -172,8 +172,8 @@
                 </div>
               </div>
             </div> 
-            <hr>
-            <a href="/view-appointment" class="card-box-footer">View More <i class="fa fa-arrow-circle-right"></i></a>
+            {{-- <hr>
+            <a href="/view-appointment" class="card-box-footer">View More <i class="fa fa-arrow-circle-right"></i></a> --}}
           </div>
         </div>
       </div>
@@ -193,8 +193,8 @@
                 </div>
               </div>
             </div> 
-            <hr>
-            <a href="/medical-issuance-of-slip" class="card-box-footer">View More <i class="fa fa-arrow-circle-right"></i></a>
+            {{-- <hr>
+            <a href="/medical-issuance-of-slip" class="card-box-footer">View More <i class="fa fa-arrow-circle-right"></i></a> --}}
           </div>
         </div>
       </div>
@@ -212,8 +212,8 @@
                 </div>
               </div>
             </div> 
-            <hr>
-            <a href="/medical-OTC-medicine" class="card-box-footer">View More <i class="fa fa-arrow-circle-right"></i></a>
+            {{-- <hr>
+            <a href="/medical-OTC-medicine" class="card-box-footer">View More <i class="fa fa-arrow-circle-right"></i></a> --}}
           </div>
         </div>
       </div>
@@ -229,8 +229,8 @@
                 <span class="h2 font-weight-bold mb-0">{{$oralprophylaxis}}</span>
             </div>
             </div>
-            <hr>
-            <a href="/records-of-oralprophylaxis" class="card-box-footer">View More <i class="fa fa-arrow-circle-right"></i></a>
+            {{-- <hr>
+            <a href="/records-of-oralprophylaxis" class="card-box-footer">View More <i class="fa fa-arrow-circle-right"></i></a> --}}
           </div>
         </div>
       </div>
@@ -246,8 +246,8 @@
                 <span class="h2 font-weight-bold mb-0">{{$toothextraction}}</span>
             </div>
             </div> 
-            <hr>
-            <a href="/records-of-toothextraction" class="card-box-footer">View More <i class="fa fa-arrow-circle-right"></i></a>
+            {{-- <hr>
+            <a href="/records-of-toothextraction" class="card-box-footer">View More <i class="fa fa-arrow-circle-right"></i></a> --}}
           </div>
         </div>
       </div>
@@ -289,8 +289,8 @@
                 </div>
               </div>
             </div> 
-            <hr>
-            <a href="/medical-provision-of-comfort" class="card-box-footer">View More <i class="fa fa-arrow-circle-right"></i></a>
+            {{-- <hr>
+            <a href="/medical-provision-of-comfort" class="card-box-footer">View More <i class="fa fa-arrow-circle-right"></i></a> --}}
           </div>
         </div>
       </div>
@@ -308,8 +308,8 @@
                 </div>
               </div>
             </div>
-            <hr>
-            <a href="/medical-blood-pressure" class="card-box-footer">View More <i class="fa fa-arrow-circle-right"></i></a>
+            {{-- <hr>
+            <a href="/medical-blood-pressure" class="card-box-footer">View More <i class="fa fa-arrow-circle-right"></i></a> --}}
           </div>
         </div>
       </div>
@@ -325,8 +325,8 @@
                   <span class="h2 font-weight-bold mb-0">{{$dentalcheckup}}</span>
               </div>
             </div>
-            <hr>
-            <a href="/records-of-checkup" class="card-box-footer">View More <i class="fa fa-arrow-circle-right"></i></a>
+            {{-- <hr>
+            <a href="/records-of-checkup" class="card-box-footer">View More <i class="fa fa-arrow-circle-right"></i></a> --}}
           </div>
         </div>
       </div>
@@ -342,8 +342,8 @@
                 <span class="h2 font-weight-bold mb-0">{{$cavityfilling}}</span>
             </div>
             </div>
-            <hr>
-            <a href="/records-of-cavityfilling" class="card-box-footer">View More <i class="fa fa-arrow-circle-right"></i></a>
+            {{-- <hr>
+            <a href="/records-of-cavityfilling" class="card-box-footer">View More <i class="fa fa-arrow-circle-right"></i></a> --}}
           </div>
         </div>
       </div>
@@ -363,8 +363,8 @@
                 </div>
               </div>
             </div>
-            <hr>
-            <a href="/medical-wound-dressing" class="card-box-footer">View More <i class="fa fa-arrow-circle-right"></i></a>
+            {{-- <hr>
+            <a href="/medical-wound-dressing" class="card-box-footer">View More <i class="fa fa-arrow-circle-right"></i></a> --}}
           </div>
         </div>
       </div>
@@ -401,8 +401,8 @@
                 </div>
               </div>
             </div> 
-            <hr>
-            <a href="/medical-other-concern" class="card-box-footer">View More <i class="fa fa-arrow-circle-right"></i></a>
+            {{-- <hr>
+            <a href="/medical-other-concern" class="card-box-footer">View More <i class="fa fa-arrow-circle-right"></i></a> --}}
           </div>
         </div>
       </div>

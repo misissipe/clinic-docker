@@ -15,6 +15,117 @@ use EmployeeHRMIS;
 
 class AuthenticationController extends Controller
 {
+  public function dentalLoginPage()
+  {
+    if (session('role') === 'Appointment') {
+      return redirect()->route('dental.appointment.create');
+    }
+
+    $pageConfigs = ['bodyCustomClass' => 'bg-full-screen-image'];
+    return view('pages.dental-login', ['pageConfigs' => $pageConfigs]);
+  }
+
+  public function dentalSignUp(Request $request)
+  {
+    $request->validate([
+      'role' => 'required|in:Student,Employee',
+      'campus' => 'required|integer|between:1,6',
+      'username' => 'required|max:50',
+      'password' => 'required|min:6|confirmed',
+    ]);
+
+    $table = $request->role === 'Student' ? 'student_info' : 'employee_info';
+    $idColumn = $request->role === 'Student' ? 'StudentNo' : 'AgencyNumber';
+
+    $patient = DB::table($table)
+      ->where($idColumn, $request->username)
+      ->where('campus', $request->campus)
+      ->first();
+
+    if (!$patient) {
+      return back()->withInput()->withErrors([
+        'username' => 'The ID number was not found for the selected campus.',
+      ]);
+    }
+
+    if (!empty($patient->password)) {
+      return back()->withInput()->withErrors([
+        'username' => 'An account already exists for this ID number. Please log in.',
+      ]);
+    }
+
+    DB::table($table)
+      ->where($idColumn, $request->username)
+      ->where('campus', $request->campus)
+      ->update([
+        'username' => $request->username,
+        'password' => Hash::make($request->password),
+        'account_created_at' => Carbon::now('Asia/Manila'),
+      ]);
+
+    $this->startDentalPatientSession($patient, $request->role, $request->campus, $idColumn);
+
+    return redirect()->route('dental.appointment.create')
+      ->with('success', 'Your account was created successfully.');
+  }
+
+  public function dentalLogin(Request $request)
+  {
+    $request->validate([
+      'role' => 'required|in:Student,Employee',
+      'campus' => 'required|integer|between:1,6',
+      'username' => 'required|max:50',
+      'password' => 'required',
+    ]);
+
+    $table = $request->role === 'Student' ? 'student_info' : 'employee_info';
+    $idColumn = $request->role === 'Student' ? 'StudentNo' : 'AgencyNumber';
+
+    $patient = DB::table($table)
+      ->where($idColumn, $request->username)
+      ->where('campus', $request->campus)
+      ->first();
+
+    if (!$patient || empty($patient->password) || !Hash::check($request->password, $patient->password)) {
+      return back()->withInput()->withErrors([
+        'login' => 'The ID number, password, patient type, or campus is incorrect.',
+      ]);
+    }
+
+    $this->startDentalPatientSession($patient, $request->role, $request->campus, $idColumn);
+
+    return redirect()->route('dental.appointment.create');
+  }
+
+  public function dentalLogout()
+  {
+    session()->forget([
+      'username', 'patientId', 'patient_type', 'name', 'firstname',
+      'lastname', 'photo', 'role', 'campus',
+    ]);
+
+    return redirect()->route('dental.login');
+  }
+
+  private function startDentalPatientSession($patient, $role, $campus, $idColumn)
+  {
+    $firstName = $patient->FirstName ?? '';
+    $middleName = $patient->MiddleName ?? '';
+    $lastName = $patient->LastName ?? '';
+    $patientId = $patient->{$idColumn};
+
+    session([
+      'username' => $patientId,
+      'patientId' => $patientId,
+      'patient_type' => $role,
+      'name' => trim($firstName . ' ' . $middleName . ' ' . $lastName),
+      'firstname' => $firstName,
+      'lastname' => $lastName,
+      'role' => 'Appointment',
+      'campus' => $campus,
+    ]);
+  }
+
   //Login page
   // public function loginPage(){
   //   $pageConfigs = ['bodyCustomClass'=> 'bg-full-screen-image'];

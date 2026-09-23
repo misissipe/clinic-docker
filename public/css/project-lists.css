@@ -1,0 +1,56 @@
+/* Shared screen styling for the project's list pages. */
+@media screen {
+  .content-body .card:has(.table-responsive),
+  .content-body .queue-card,
+  .content-body .record-card {
+    background: #fff;
+    border: 1px solid #e3e9f2;
+    border-radius: 5px;
+    box-shadow: 0 8px 24px rgba(40, 55, 80, .10);
+  }
+
+  .content-body .table-responsive > table {
+    width: 100% !important;
+  }
+
+  .content-body .table-responsive > table > thead:not(.head) > tr > th {
+    background: #6e9bde !important;
+    color: #fff !important;
+    border: 1px solid #d8dde5;
+    text-align: center !important;
+    text-transform: uppercase;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .35px;
+    padding: 8px 12px;
+    vertical-align: middle;
+  }
+
+  .content-body .table-responsive > table > tbody > tr > td {
+    border-color: #d8dde5;
+    vertical-align: middle;
+  }
+
+  .content-body .card:has(.table-responsive) .form-control,
+  .content-body .queue-tools .form-control,
+  .content-body .record-tools .form-control {
+    border: 1px solid #dbe3ed;
+    border-radius: 4px;
+    min-height: 39px;
+  }
+
+  .content-body .card:has(.table-responsive) .btn-primary,
+  .content-body .queue-tools .btn-primary,
+  .content-body .record-tools .btn-primary {
+    background-color: #5a8dee;
+    border-color: #5a8dee;
+    border-radius: 4px;
+  }
+
+  .content-body .card:has(.table-responsive) .btn-primary:hover,
+  .content-body .queue-tools .btn-primary:hover,
+  .content-body .record-tools .btn-primary:hover {
+    background-color: #437be0;
+    border-color: #437be0;
+  }
+}

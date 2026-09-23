@@ -46,7 +46,7 @@ class DashboardController extends Controller
           ->orderBy('time')
           ->get();
 
-        $schedToday = $viewToday->count();
+      $schedToday = $viewToday->count();
 
       $totalStudMS = DB::table('health_history')->where('role','Student')->where('campus',session('campus'))->count();
       $totalEmployeeMS = DB::table('health_history')->where('role','Employee')->where('campus',session('campus'))->count();
@@ -129,114 +129,52 @@ class DashboardController extends Controller
       // $oralprophylaxis = DB::table('treatmentrecord')->whereJsonContains('remarks', 'Oral Prophylaxis')->whereMonth('date', $monthNumber)->whereYear('date', $year)->whereNull('deleted_at')->where('campus',session('campus'))->count();
       // $toothextraction = DB::table('treatmentrecord')->whereJsonContains('remarks', 'Tooth Extraction')->whereMonth('date', $monthNumber)->whereYear('date', $year)->whereNull('deleted_at')->where('campus',session('campus'))->count();
       
-      $total_Students = DB::table('referral')->where('status','=','Pending')->where('role','=','Student')->whereMonth('created_at', $monthNumber)->where('campus',session('campus'))->count();
-      $total_Employees = DB::table('referral')->where('status','=','Pending')->where('role','=','Employee')->whereMonth('created_at', $monthNumber)->where('campus',session('campus'))->count();
+      $total_Students = DB::table('referral')
+        ->where('status','=','Pending')
+        ->where('role','=','Student')
+        ->whereMonth('created_at', $monthNumber)
+        ->where('campus',session('campus'))
+        ->count();
+
+      $total_Employees = DB::table('referral')
+        ->where('status','=','Pending')
+        ->where('role','=','Employee')
+        ->whereMonth('created_at', $monthNumber)
+        ->where('campus',session('campus'))
+        ->count();
 
       $total = $total_Students + $total_Employees; 
-      $totalOTC = DB::table('otc_medicine')->where('campus',session('campus'))->whereNull('deleted_at')->count();
 
-      $scheduleToday = DB::table('appointment')->where('date', $today)->where('campus',session('campus'))->count();
-      $rescheduled = DB::table('appointment')->where('status', 'Rescheduled')->where('date', $today)->where('campus',session('campus'))->count();
+      $totalOTC = DB::table('otc_medicine')
+        ->where('campus',session('campus'))
+        ->whereNull('deleted_at')
+        ->count();
+
+      $scheduleToday = DB::table('appointment')
+      ->where('date', $today)
+      ->where('campus',session('campus'))
+      ->count();
+
+      $rescheduled = DB::table('appointment')
+        ->where('status', 'Rescheduled')
+        ->where('date', $today)
+        ->where('campus',session('campus'))
+        ->count();
 
    
+      $scheduleAll = DB::table('appointment')->where('status', '=','Pending')->Orwhere('status', '=','Approved')->Orwhere('status', '=', 'Rescheduled')->where('campus',session('campus'))->get();
 
-      if(session('role') == 'Admin'){
-
-        $totalStudMS = DB::table('health_history')->where('role','Student')->count();
-      $totalEmployeeMS = DB::table('health_history')->where('role','Employee')->count();
-      $totalStudDS = DB::table('dentalchart')->where('role','=','Student')->count();
-      $totalEmployeeDS = DB::table('dentalchart')->where('role','=','Employee')->count();
-      $totalDependentDS = DB::table('dentalchart')->where('role','=','Dependent')->count();
-
-       $query = DB::table('medicalrecord')
-        ->whereMonth('date', $monthNumber)
-        ->whereYear('date', $year)
-        ->whereNull('deleted_at');
-
-      $total_records = $query->count();
-
-      $total_consultation = (clone $query)
-          ->whereJsonContains('purpose', 'Consultation')
-          ->count();
-
-      $total_others = (clone $query)
-          ->whereJsonContains('purpose', 'Other Concerns')
-          ->count();
-      $total_wound_dressing = (clone $query)
-          ->whereJsonContains('purpose', 'Wound Dressing')
-          ->count();
-      $total_bp= (clone $query)
-          ->whereJsonContains('purpose', 'Blood Pressure')
-          ->count();
-      $total_provision= (clone $query)
-          ->whereJsonContains('purpose', 'Provision of Comfort')
-          ->count();
-      $total_issuedcert= (clone $query)
-          ->whereJsonContains('purpose', 'Issuance of Certificate')
-          ->count();
-      $total_referral= (clone $query)
-          ->whereJsonContains('purpose', 'Referral')
-          ->count();
-      $total_medicine= (clone $query)
-          ->whereJsonContains('purpose', 'OTC Medicine')
-          ->count();
-
-
-     $query2 = DB::table('treatmentrecord')
-                ->whereMonth('date', $monthNumber)
-                ->whereYear('date', $year)
-                ->whereNull('deleted_at');
-
-      $total_recordsVisit = $query2->count();
-
-      $dentalcheckup = (clone $query2)
-              ->whereJsonContains('remarks', 'Consultation')
-              ->count();
-      $cavityfilling = (clone $query2)
-              ->whereJsonContains('remarks', 'Oral Restoration')
-              ->count();
-      $oralprophylaxis = (clone $query2)
-              ->whereJsonContains('remarks', 'Oral Prophylaxis')
-              ->count();
-      $toothextraction = (clone $query2)
-              ->whereJsonContains('remarks', 'Tooth Extraction')
-              ->count();
-
-      $total_Students = DB::table('referral')->where('status','=','Pending')->where('role','=','Student')->whereMonth('created_at', $monthNumber)->count();
-      $total_Employees = DB::table('referral')->where('status','=','Pending')->where('role','=','Employee')->whereMonth('created_at', $monthNumber)->count();
-
-      $total = $total_Students + $total_Employees; 
-      $totalOTC = DB::table('otc_medicine')->whereNull('deleted_at')->count();
-
-      $scheduleToday = DB::table('appointment')->where('date', $today)->count();
-      $rescheduled = DB::table('appointment')->where('status', 'Rescheduled')->where('date', $today)->count();
-
-
-        $scheduleAll = DB::table('appointment')->where('status', '=','Pending')->Orwhere('status', '=','Approved')->Orwhere('status', '=', 'Rescheduled')->get();
+     $activeScheduleStatuses = ['Pending', 'For Approval', 'Approved', 'Rescheduled'];
+        
+    $viewToday = DB::table('appointment')
+            ->whereDate('date', $today)
+            ->whereIn('status', $activeScheduleStatuses)
+            ->where('campus', session('campus'))
+            ->whereNull('deleted_at')
+            ->orderBy('time')
+            ->get();
        
-        return view('pages.dashboard-admin',compact('rescheduled','total_consultation','dentalcheckup','cavityfilling','oralprophylaxis','toothextraction','totalOTC','totalStudMS','totalStudDS','total_recordsVisit','total_records','total_issuedcert','total_referral','total_wound_dressing','total_bp','total_provision','total_medicine','total_others','scheduleAll','scheduleToday','total','totalEmployeeMS','totalEmployeeDS','totalDependentDS','schedToday'));
-      } else if (session('role') == 'Nurse'){
-       return view('pages.nurse-dashboard',compact('rescheduled','total_consultation','total','dentalcheckup','cavityfilling','oralprophylaxis','toothextraction','totalOTC','total_recordsVisit','scheduleToday','totalStudMS','totalStudDS','totalStudDS','total_recordsVisit','total_records','total_issuedcert','total_referral','total_wound_dressing', 'total_bp','total_provision','total_medicine','total_others','totalEmployeeMS','totalEmployeeDS','totalDependentDS','schedToday'));
-      } else if (session('role') == 'Nurse Attendant'){
-
-       return view('pages.nurse-attendant-dashboard',compact('rescheduled','total_consultation','total','dentalcheckup','cavityfilling','oralprophylaxis','toothextraction','totalOTC','total_recordsVisit','scheduleToday','totalStudMS','totalStudDS','totalStudDS','total_recordsVisit','total_records','total_issuedcert','total_referral','total_wound_dressing', 'total_bp','total_provision','total_medicine','total_others','totalEmployeeMS','totalEmployeeDS','totalDependentDS','schedToday'));
-       } else if (session('role') == 'Doctor'){
-
-       return view('pages.nurse-attendant-dashboard',compact('rescheduled','total_consultation','total','dentalcheckup','cavityfilling','oralprophylaxis','toothextraction','totalOTC','total_recordsVisit','scheduleToday','totalStudMS','totalStudDS','totalStudDS','total_recordsVisit','total_records','total_issuedcert','total_referral','total_wound_dressing', 'total_bp','total_provision','total_medicine','total_others','totalEmployeeMS','totalEmployeeDS','totalDependentDS','schedToday'));
-      
-        return view('pages.doctor-dashboard');
-      } else if (session('role') == 'Attendant'){
-        $scheduleAll = DB::table('appointment')->where('status', '=','Pending')->Orwhere('status', '=','Approved')->Orwhere('status', '=', 'Rescheduled')->where('campus',session('campus'))->get();
-
-        $activeScheduleStatuses = ['Pending', 'For Approval', 'Approved', 'Rescheduled'];
-        $viewToday = DB::table('appointment')
-          ->whereDate('date', $today)
-          ->whereIn('status', $activeScheduleStatuses)
-          ->where('campus', session('campus'))
-          ->whereNull('deleted_at')
-          ->orderBy('time')
-          ->get();
-        $upcomingSchedules = DB::table('appointment')
+          $upcomingSchedules = DB::table('appointment')
           ->whereDate('date', '>', $today)
           ->whereIn('status', $activeScheduleStatuses)
           ->where('campus', session('campus'))
@@ -245,43 +183,56 @@ class DashboardController extends Controller
           ->orderBy('time')
           ->take(8)
           ->get();
+        
         $schedToday = $viewToday->count();
+
         $upcomingCount = DB::table('appointment')
           ->whereDate('date', '>', $today)
           ->whereIn('status', $activeScheduleStatuses)
           ->where('campus', session('campus'))
           ->whereNull('deleted_at')
           ->count();
+
         $pendingCount = DB::table('appointment')
           ->whereIn('status', ['Pending', 'For Approval'])
           ->where('campus', session('campus'))
           ->whereNull('deleted_at')
           ->count();
+
         $approvedCount = DB::table('appointment')
           ->where('status', 'Approved')
           ->where('campus', session('campus'))
           ->whereNull('deleted_at')
           ->count();
+          
         $rescheduledCount = DB::table('appointment')
           ->whereDate('date', '>', $today)
           ->where('status', 'Rescheduled')
           ->where('campus', session('campus'))
           ->whereNull('deleted_at')
           ->count();
-     
-        return view('pages.attendant-dashboard',compact('rescheduled','total_consultation','total','dentalcheckup','cavityfilling','oralprophylaxis','toothextraction','totalOTC','total_recordsVisit','scheduleToday','totalStudMS','totalStudDS','totalStudDS','total_recordsVisit','total_records','total_issuedcert','total_referral','total_wound_dressing', 'total_bp','total_provision','total_medicine','total_others','totalEmployeeMS','totalEmployeeDS','totalDependentDS','viewToday','upcomingSchedules','schedToday','upcomingCount','pendingCount','approvedCount','rescheduledCount'));
-     
-      } else if (session('role') == 'Dentist'){
+
         $appointmentToday = DB::table('appointment')->whereDate('approve_at', $today)->where('status', '=','Approved')->where('campus',session('campus'))->get();
+
+      if(session('role') == 'Admin'){
+        return view('pages.dashboard-admin',compact('rescheduled','total_consultation','dentalcheckup','cavityfilling','oralprophylaxis','toothextraction','totalOTC','totalStudMS','totalStudDS','total_recordsVisit','total_records','total_issuedcert','total_referral','total_wound_dressing','total_bp','total_provision','total_medicine','total_others','scheduleAll','scheduleToday','total','totalEmployeeMS','totalEmployeeDS','totalDependentDS','schedToday'));
+      } else if (session('role') == 'Nurse'){
+       return view('pages.nurse-dashboard',compact('rescheduled','total_consultation','total','dentalcheckup','cavityfilling','oralprophylaxis','toothextraction','totalOTC','total_recordsVisit','scheduleToday','totalStudMS','totalStudDS','totalStudDS','total_recordsVisit','total_records','total_issuedcert','total_referral','total_wound_dressing', 'total_bp','total_provision','total_medicine','total_others','totalEmployeeMS','totalEmployeeDS','totalDependentDS','schedToday'));
+      } else if (session('role') == 'Nurse Attendant'){
+        return view('pages.nurse-attendant-dashboard',compact('rescheduled','total_consultation','total','dentalcheckup','cavityfilling','oralprophylaxis','toothextraction','totalOTC','total_recordsVisit','scheduleToday','totalStudMS','totalStudDS','totalStudDS','total_recordsVisit','total_records','total_issuedcert','total_referral','total_wound_dressing', 'total_bp','total_provision','total_medicine','total_others','totalEmployeeMS','totalEmployeeDS','totalDependentDS','schedToday'));
+      } else if (session('role') == 'Doctor'){
+        return view('pages.doctor-dashboard',compact('rescheduled','total_consultation','total','dentalcheckup','cavityfilling','oralprophylaxis','toothextraction','totalOTC','total_recordsVisit','scheduleToday','totalStudMS','totalStudDS','totalStudDS','total_recordsVisit','total_records','total_issuedcert','total_referral','total_wound_dressing', 'total_bp','total_provision','total_medicine','total_others','totalEmployeeMS','totalEmployeeDS','totalDependentDS','schedToday'));
+      } else if (session('role') == 'Attendant'){
+        return view('pages.attendant-dashboard',compact('rescheduled','total_consultation','total','dentalcheckup','cavityfilling','oralprophylaxis','toothextraction','totalOTC','total_recordsVisit','scheduleToday','totalStudMS','totalStudDS','totalStudDS','total_recordsVisit','total_records','total_issuedcert','total_referral','total_wound_dressing', 'total_bp','total_provision','total_medicine','total_others','totalEmployeeMS','totalEmployeeDS','totalDependentDS','viewToday','upcomingSchedules','schedToday','upcomingCount','pendingCount','approvedCount','rescheduledCount'));
+      } else if (session('role') == 'Dentist'){
        return view('pages.dentist-dashboard',compact('rescheduled','total_consultation','appointmentToday','totalStudDS','totalStudMS','totalEmployeeMS','totalEmployeeDS','totalDependentDS','schedToday'));
       } else if (session('role') == 'Employee'){
-          
-     return view('pages.page-contact');
-    }   else if (session('role') == 'Guest'){
+       return view('pages.page-contact');
+      }else if (session('role') == 'Guest'){
        return view('pages.guest-dashboard',compact('rescheduled','total_consultation','total','dentalcheckup','cavityfilling','oralprophylaxis','toothextraction','totalOTC','total_recordsVisit','scheduleToday','totalStudMS','totalStudDS','totalStudDS','total_recordsVisit','total_records','total_issuedcert','total_referral','total_wound_dressing', 'total_bp','total_provision','total_medicine','total_others','totalEmployeeMS','totalEmployeeDS','totalDependentDS','schedToday'));
-     
-    }else if (session('role') == 'Super Admin'){
-                $totalStudMS = DB::table('health_history')->where('role','Student')->count();
+      }else if (session('role') == 'Super Admin'){
+      
+      $totalStudMS = DB::table('health_history')->where('role','Student')->count();
       $totalEmployeeMS = DB::table('health_history')->where('role','Employee')->count();
       $totalStudDS = DB::table('dentalchart')->where('role','=','Student')->count();
       $totalEmployeeDS = DB::table('dentalchart')->where('role','=','Employee')->count();
@@ -357,14 +308,11 @@ class DashboardController extends Controller
      return view('pages.dashboard-ecommerce',compact('rescheduled','total_consultation','dentalcheckup','cavityfilling','oralprophylaxis','toothextraction','totalOTC','totalStudMS','totalStudDS','total_recordsVisit','total_records','total_issuedcert','total_referral','total_wound_dressing','total_bp','total_provision','total_medicine','total_others','scheduleAll','scheduleToday','total','totalEmployeeMS','totalEmployeeDS','totalDependentDS','schedToday'));
     } 
        return view('pages.page-contact');
+  
    }
-
+  
     // analystic
     public function dashboardAnalytics(){
         return view('pages.dashboard-analytics');
     }
-
-
-   
-    
 }

@@ -54,7 +54,7 @@
                         </td>  
                         <td>{{$data->employee_id}}</td>
                         <td>{{$data->lastname}}, {{$data->firstname}} {{$data->middlename}}</td>
-                        <td>{{$data->role}}</td>
+                        <td>{{implode(',', json_decode($data->role))}}</td>
            
                         {{-- <td><button type="button" class="btn btn-default viewModal" data-id="{{"$data->employee_id"}}" data-toggle="modal" data-target="#viewUserModal"><i class="fa fa-edit" style="font-size:20px"></i></button></td>            --}}
                       </tr>

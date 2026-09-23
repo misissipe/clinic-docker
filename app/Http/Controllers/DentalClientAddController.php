@@ -197,6 +197,10 @@ class DentalClientAddController extends Controller
                 'created_at' => Carbon::now('Asia/Manila'),
                 'date' =>   $request->date,
              ]);
+            if ($save) {
+                \App\Services\ClinicNotifications::publish('dental-treatment:' . \Illuminate\Support\Str::uuid(), session('campus'), ['Dentist', 'Attendant'], 'A new dental treatment record was saved.', '/treatment-records');
+            }
+
      
               $newId = DB::table('treatmentrecord')
                 ->where('patientId', $request->id)
@@ -496,6 +500,10 @@ class DentalClientAddController extends Controller
                 'created_at' => Carbon::now('Asia/Manila'),
                 'date' =>   $request->date,
              ]);
+            if ($save) {
+                \App\Services\ClinicNotifications::publish('dental-treatment:' . \Illuminate\Support\Str::uuid(), session('campus'), ['Dentist', 'Attendant'], 'A new dental treatment record was saved.', '/treatment-records');
+            }
+
      
               $newId = Treatment::where('patientId', $request->id)
                 ->latest('id')

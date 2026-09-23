@@ -61,9 +61,15 @@ Route::get('/calendar','appointmentController@indexpatientAppointment');
   
 // });
 
-// Route::get('/patient/login','AuthenticationController@authpatientLockPage');
-// Route::post('/patient-appointment-dashboard','AuthenticationController@authpatientSignUp');
-// Route::post('/patientLogin','AuthenticationController@authpatientLockPage');
+// Dental patient account
+Route::get('/dental/login', 'AuthenticationController@dentalLoginPage')
+    ->name('dental.login');
+Route::post('/dental/login', 'AuthenticationController@dentalLogin')
+    ->name('dental.login.submit');
+Route::post('/dental/sign-up', 'AuthenticationController@dentalSignUp')
+    ->name('dental.signup');
+Route::get('/dental/logout', 'AuthenticationController@dentalLogout')
+    ->name('dental.logout');
 
 
 //Authentication  Route
@@ -98,11 +104,12 @@ Route::middleware(['authuser'])->group(function () {
 });
 
 //Add User
-Route::middleware(['authuser', 'campus.one'])->group(function () {
+Route::middleware(['authuser'])->group(function () {
     Route::get('/add-new-user','UserController@index')->name('clinic-accounts.index');
     Route::get('/add-new-user-search','UserController@searchEmployees')->name('clinic-accounts.search');
     Route::get('/add-new-user/{employee}/manage','UserController@manage')->name('clinic-accounts.manage');
     Route::post('/add-new-user/{employee}/manage','UserController@saveAccount')->name('clinic-accounts.save');
+    Route::delete('/add-new-user/{employee}','UserController@deleteAccount')->name('clinic-accounts.delete');
     Route::post('/addUser','UserController@addUser');
     Route::post('/viewUser','UserController@viewUser');
     Route::post('/updateUser','UserController@update');
@@ -180,6 +187,7 @@ Route::middleware(['authuser'])->group(function () {
     Route::post('/cancelStatus','appointmentController@cancelStatus');
     Route::get('/view-status-appointment','appointmentController@status');
     Route::post('/reschedule','appointmentController@reschedule');
+    Route::post('/cancel-reschedule','appointmentController@cancelReschedule');
     Route::get('/payment-appointment','appointmentController@paymentappointment');
     Route::post('/rescheduleModal','appointmentController@reScheduled');
 
@@ -409,6 +417,9 @@ Route::middleware(['authuser'])->group(function () {
     Route::get('/report-records','ReportController@reportMedicalRecord');
     Route::get('/report-dental-services','ReportController@dentalindex');
     Route::get('/report-dental','ReportController@reportDentalRecord');
+    Route::get('/Expiration-report','ReportController@expiredmedicine');
+    Route::post('/search-medicine','ReportController@expiredmedicineSearch');
+    Route::get('/expired-medicine-report','ReportController@generateReportMed');
 });
 
 #Log-Books
@@ -481,6 +492,8 @@ Route::middleware(['authuser'])->group(function () {
     Route::get('/inventory','InventoryController@index');
     Route::get('/Inventory-report','InventoryController@totalInventory');
     Route::post('/Inventory-report','InventoryController@displaytotalInventory');
+     Route::post('/inventory-records','InventoryController@inventoryRecords');
+      Route::get('/inventory-report-form','InventoryController@generateReportInven');
     // Route::post('/searchitem','InventoryController@searchitem')->name('searchitem');
     // Route::post('/searchUnit','InventoryController@searchUnit')->name('searchUnit');
     // Route::post('/addStock','InventoryController@add');
@@ -535,3 +548,10 @@ Route::middleware(['authuser'])->group(function () {
     Route::post('/deleteSignatories', 'SignatoriesController@deleteSignatories');
 });
 
+
+Route::middleware(['authuser'])->group(function () {
+    Route::get('/clinic-notifications', 'ClinicNotificationController@index')->name('clinic.notifications');
+    Route::post('/clinic-notifications/read-all', 'ClinicNotificationController@readAll');
+    Route::post('/clinic-notifications/{id}/unread', 'ClinicNotificationController@unread')->where('id', '[0-9]+');
+    Route::post('/clinic-notifications/{id}/read', 'ClinicNotificationController@read')->where('id', '[0-9]+');
+});

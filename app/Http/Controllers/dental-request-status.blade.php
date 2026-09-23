@@ -149,31 +149,17 @@
     <h3><i class="fa fa-tasks" style="color:var(--da-blue)"></i> Request Status</h3>
     <span class="request-pill {{ str_replace(' ', '-', $requestStatus) }}">{{ $requestLabel }}</span>
   </div>
-  <div class="request-schedule" style="font-size:14px">
-   @if($requestStatus === 'rescheduled' && ($appointment->original_date || $appointment->original_time))
-    <div style="margin-bottom:10px">
-      <b>Previous schedule:</b><br>
-      <i class="fa fa-calendar"></i>
-      {{ $appointment->original_date ? \Carbon\Carbon::parse($appointment->original_date)->format('M d, Y') : '—' }} -
-      <span><i class="fa fa-clock-o"></i> {{ $appointment->original_time ? \Carbon\Carbon::parse($appointment->original_time)->format('h:i A') : '—' }}</span>
-    </div>
-   @endif
-   <div> <span style="font-size:14px"><b>New schedule:</b></span>
-    <br>
+  <div class="request-schedule">
+   <div><b>Requested schedule:</b> {{ implode(', ', json_decode($requestPurpose, true) ?? []) ?: 'Dental appointment' }}</div>
+    <div class="request-meta">
+      <span>
     <i class="fa fa-calendar"></i>
     {{ $appointment->date 
         ? \Carbon\Carbon::parse($appointment->date)->format('M d, Y') 
         : '—' 
-    }} -
-    <span><i class="fa fa-clock-o"></i> {{ $appointment->time ? \Carbon\Carbon::parse($appointment->time)->format('h:i A') : '—' }}</span>
-    <br>
-    <i class="fa fa-folder-open-o"></b></i>
-     {{ implode(', ', json_decode($requestPurpose, true) ?? []) ?: 'Dental appointment' }}</div>
-    <div class="request-meta">
-      <span>
-
+    }}
 </span>
-
+      <span><i class="fa fa-clock-o"></i> {{ $appointment->time ? \Carbon\Carbon::parse($appointment->time)->format('h:i A') : '—' }}</span>
     </div>
     @if(in_array($requestStatus, ['cancelled', 'disapproved', 'rescheduled'], true))
       <div class="request-reason">

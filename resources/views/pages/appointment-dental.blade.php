@@ -7,10 +7,10 @@
 @section('content')
 @php
     $serviceDetails = [
-        'Consultation' => ['Dental check-up and consultation', 'fa-stethoscope', 'blue'],
-        'Oral Restoration' => ['Cavity filling and oral restoration', 'fa-shield', 'teal'],
-        'Oral Prophylaxis' => ['Professional dental cleaning', 'fa-star', 'gold'],
-        'Tooth Extraction' => ['Tooth extraction and evaluation', 'fa-heart-o', 'pink'],
+    'Consultation' => ['Dental check-up and consultation', 'fa-stethoscope', 'blue'],
+    'Oral Restoration' => ['Cavity filling and oral restoration', 'fa-shield', 'teal'],
+    'Oral Prophylaxis' => ['Professional dental cleaning', 'fa-star', 'gold'],
+    'Tooth Extraction' => ['Tooth extraction and evaluation', 'fa-heart-o', 'pink'],
     ];
 
     $clinicLocation = 'SLSU Clinic, Student Center';
@@ -62,8 +62,9 @@
     body{background:var(--da-bg)}
 
     .da-page{
-      max-width:1540px;
-      margin:0 auto;
+      width:100%;
+      max-width:none;
+      margin:0;
       padding:24px;
       color:var(--da-dark);
       font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif
@@ -196,13 +197,18 @@
       background:#fff
     }
 
-    .service-option:hover 
+    .service-option:not(.unavailable):hover
 
     .service-tile{
       border-color:#9bbcff;
       transform:translateY(-1px);
       box-shadow:0 6px 18px rgba(7,88,232,.07)
     }
+
+    .service-option.unavailable{cursor:not-allowed}
+    .service-option.unavailable .service-tile{background:#f4f6f9;color:#64748b}
+    .service-option.unavailable .service-icon{opacity:.5}
+    .service-unavailable-notice{display:block;margin-top:12px;color:#805500;font-size:12px;line-height:1.5;font-weight:600}
 
     .service-option input:checked+.service-tile{
       border:2px solid var(--da-blue);background:linear-gradient(135deg,#f2f7ff,#fff);
@@ -1143,8 +1149,9 @@
               <p class="da-help">What type of service do you need?</p>
               <div class="service-grid">
                 @foreach($services as $serviceValue => $serviceLabel)
-                  <label class="service-option">
-                    <input type="checkbox" name="service[]" value="{{ $serviceValue }}" {{ in_array($serviceValue, $oldServices) ? 'checked' : '' }}>
+                  @php($available = isset($serviceStatuses[$serviceValue]) && (int) $serviceStatuses[$serviceValue] === 0)
+                  <label class="service-option {{ $available ? '' : 'unavailable' }}">
+                    <input type="checkbox" name="service[]" value="{{ $serviceValue }}" {{ $available && in_array($serviceValue, $oldServices) ? 'checked' : '' }} @unless($available) disabled @endunless>
                     <span class="service-tile">
                       <span class="service-icon {{ $serviceDetails[$serviceValue][2] }}">
                           <i class="fa {{ $serviceDetails[$serviceValue][1] }}"></i>
@@ -1154,6 +1161,11 @@
                       <span class="service-description">
                         {{ $serviceDetails[$serviceValue][0] }}
                       </span>
+            
+                      @unless($available)
+                      {{-- <hr> --}}
+                        <span class="service-unavailable-notice" style="color:red"><b>Temporarily unavailable!</b></span>
+                      @endunless
                     </span>
                   </label>
                 @endforeach

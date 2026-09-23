@@ -5,8 +5,9 @@
 {{-- vendor style --}}
 @section('vendor-styles')
 <link rel="stylesheet" type="text/css" href="{{asset('vendors/css/tables/datatable/datatables.min.css')}}">
+<link rel="stylesheet" href="{{ asset('css/pages/monitoring-history.css') }}?v={{ filemtime(public_path('css/pages/monitoring-history.css')) }}">
 <style>
-  .monitoring-shell { max-width: 1520px; margin: 0 auto; }
+  .monitoring-shell { width: 100%; max-width: none; margin: 0; }
   .monitoring-card { border: 1px solid #e3e9f2; border-radius: 14px; box-shadow: 0 8px 28px rgba(35,58,92,.08); overflow: hidden; background:#fff; }
   .patient-banner { background: linear-gradient(135deg,#447bd1,#6a9ce6); color:#fff; min-height:76px; padding:16px 22px; display:flex; align-items:center; gap:14px; }
   .patient-icon { width:43px; height:43px; border-radius:11px; background:rgba(255,255,255,.18); display:flex; align-items:center; justify-content:center; }
@@ -224,41 +225,7 @@
       </div>
     </div>
     <div class="col-md-5">
-      <div class="card text-left monitoring-card history-card">
-        <div class="card-body">
-          <h3 class="history-title">Previous Consultations</h3><div class="history-caption">Read-only history of this patient's saved records.</div>
-          <div class=" view-all">
-            <div class="table-responsive">
-              <table class="table table-sm recordTable table-bordered table-striped" id="recordTable">
-                <thead> 
-                  <tr>
-                    <th style="color:white;text-align:center">Date</th> 
-                    <th style="color:white;text-align:center">Purpose</th>
-                    <th style="color:white;text-align:center">Findings</th>
-                    <th style="color:white;text-align:center">Parameters</th>
-                    <th style="color:white;text-align:center">Treatment</th>
-                  </tr>
-                </thead>
-                <tbody id="viewAllRecord">
-                  @foreach ($view as $data)
-                  <tr>
-                    <td style="text-align:center">{{ date('m-d-Y', strtotime($data->date)) }}</td>
-                    <td>{{ implode(', ', json_decode($data->purpose)) }}</td> 
-                    <td>{{ $data->findings  }}</td>
-                    <td style="text-align:left">
-                      {!! $data->parameters
-                          ? $data->parameters
-                          : "W: $data->weight <br> H: $data->height <br> B-Type: $data->blood_type <br> Temp: $data->temp <br> Pulse: $data->pulse <br> Res Rate: $data->res_rate <br> BP: $data->bp" !!}
-                    </td>                               
-                    <td>{{ $data->recommendation }}</td>
-                  </tr>
-                  @endforeach
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      </div>
+      @include('pages.partials.monitoring-consultation-history')
     </div>
   </div>
 </section>
@@ -318,6 +285,8 @@ $('#recordTable').DataTable({
     "columnDefs": [
         { "type": "date", "targets": 0 }
     ],
+    "pageLength": 3,
+    "autoWidth": false,
     "lengthMenu": [3, 5, 10, 25, 50, 100]
 });
 

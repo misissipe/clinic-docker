@@ -548,6 +548,9 @@ class PatientMedicalRecordController extends Controller
             $ne = Medical::where('patientId', $request->patientId)->where('campus',session('campus'))->latest('id')->first();
             
             if($record === true) {
+              if ((int) session('campus') === 1) {
+                \App\Services\ClinicNotifications::publish('medical-intake:' . $ne->id, session('campus'), ['Doctor'], 'A new medical patient is waiting for consultation.', '/doctor-consultation/' . $ne->id);
+              }
               return response()->json(['status' => 200,'success'   => 'Saved Successfully!','newId' =>   $new,'recId' =>   $ne->id,'role' => $role,'purpose' => $purpose,'hhId' => $hhId  ]);
             } else {
               return response()->json(["Error"=>1,"Message"=>"Error Saving Data!"]);
@@ -589,6 +592,9 @@ class PatientMedicalRecordController extends Controller
               $ne = Medical::where('patientId', $request->patientId)->where('campus',session('campus'))->latest('id')->first();
              
               if($record === true) {
+              if ((int) session('campus') === 1) {
+                \App\Services\ClinicNotifications::publish('medical-intake:' . $ne->id, session('campus'), ['Doctor'], 'A new medical patient is waiting for consultation.', '/doctor-consultation/' . $ne->id);
+              }
                 return response()->json(['status' => 200,'success'   => 'Saved Successfully!','newId' =>   $new,'recId' =>   $ne->id,'role' => $role,'purpose' => $purpose,'hhId' => $hhId   ]);
               } else {
                 return response()->json(["Error"=>1,"Message"=>"Error Saving Data!"]);
@@ -635,11 +641,38 @@ class PatientMedicalRecordController extends Controller
       ->whereNull('deleted_at')
       ->first();
 
-    return view('pages.doctor-consultation', ['pageConfigs' => $pageConfigs, 'breadcrumbs' => $breadcrumbs], compact('medical', 'patient', 'doctor'));
+    $previousConsultations = Medical::where('patientId', $medical->patientId)
+      ->where('role', $medical->role)
+      ->where('campus', session('campus'))
+      ->where('id', '<>', $medical->id)
+      ->where(function ($query) use ($medical) {
+        $query->where('date', '<', $medical->date)
+          ->orWhere(function ($sameDay) use ($medical) {
+            $sameDay->where('date', $medical->date)->where('id', '<', $medical->id);
+          });
+      })
+      ->whereNotNull('recommendation')
+      ->where('recommendation', '<>', '')
+      ->orderByDesc('date')
+      ->orderByDesc('id')
+      ->get();
+
+    $previousMedicines = DB::table('doctor_consultation')
+      ->whereIn('patientId', $previousConsultations->pluck('id'))
+      ->whereNull('deleted_at')
+      ->orderBy('id')
+      ->get()
+      ->groupBy('patientId');
+
+    return view('pages.doctor-consultation', ['pageConfigs' => $pageConfigs, 'breadcrumbs' => $breadcrumbs], compact('medical', 'patient', 'doctor', 'previousConsultations', 'previousMedicines'));
   }
 
   public function doctorConsultations(Request $request)
   {
+     $pageConfigs = ['pageHeader' => true];
+      $breadcrumbs = [
+        ["link" => "/", "name" => "Home"],["name" => "Patient List"]
+      ];
     $search = trim($request->get('search', ''));
 
     $consultations = DB::table('medicalrecord as m')
@@ -666,31 +699,22 @@ class PatientMedicalRecordController extends Controller
           ->orWhere('m.campus', '');
       });
 
-    if ($search !== '') {
-      $consultations->where(function ($query) use ($search) {
-        $query->where('m.patientId', 'like', "%{$search}%")
-          ->orWhere('s.FirstName', 'like', "%{$search}%")
-          ->orWhere('s.LastName', 'like', "%{$search}%")
-          ->orWhere('e.FirstName', 'like', "%{$search}%")
-          ->orWhere('e.LastName', 'like', "%{$search}%")
-          ->orWhere('d.FirstName', 'like', "%{$search}%")
-          ->orWhere('d.LastName', 'like', "%{$search}%");
-      });
-    }
-
     $consultations = $consultations->orderBy('m.date', 'asc')
       ->orderBy('m.time', 'asc')
-      ->paginate(12)
-      ->appends(['search' => $search]);
+      ->get();
 
-    return view('pages.doctor-consultations', compact('consultations', 'search'));
+    return view('pages.doctor-consultations', ['pageConfigs' => $pageConfigs, 'breadcrumbs' => $breadcrumbs], compact('consultations', 'search'));
   }
 
   public function saveDoctorConsultation(Request $request, $record)
   {
     $this->validateDoctorConsultation($request);
     $medical = Medical::where('id', $record)->where('campus', session('campus'))->firstOrFail();
+    $wasWaiting = $medical->status === 'For Doctor';
     $this->persistDoctorConsultation($medical, $request);
+    if ($wasWaiting) {
+      \App\Services\ClinicNotifications::publish('medical-nurse:' . $medical->id, $medical->campus, ['Nurse', 'Nurse Attendant'], 'A doctor-completed medical consultation is ready for treatment.', '/nurse-treatment/' . $medical->id);
+    }
 
     if ($request->expectsJson()) {
       return response()->json([
@@ -703,6 +727,11 @@ class PatientMedicalRecordController extends Controller
 
   public function consultationRecords(Request $request)
   {
+    $pageConfigs = ['pageHeader' => true];
+      $breadcrumbs = [
+        ["link" => "/", "name" => "Home"],["name" => "Patient List"]
+      ];
+
     $search = trim($request->get('search', ''));
     $medicineSummary = DB::table('doctor_consultation')
       ->select(
@@ -740,24 +769,11 @@ class PatientMedicalRecordController extends Controller
           ->orWhere('m.campus', '');
       });
 
-    if ($search !== '') {
-      $consultations->where(function ($query) use ($search) {
-        $query->where('m.patientId', 'like', "%{$search}%")
-          ->orWhere('s.FirstName', 'like', "%{$search}%")
-          ->orWhere('s.LastName', 'like', "%{$search}%")
-          ->orWhere('e.FirstName', 'like', "%{$search}%")
-          ->orWhere('e.LastName', 'like', "%{$search}%")
-          ->orWhere('d.FirstName', 'like', "%{$search}%")
-          ->orWhere('d.LastName', 'like', "%{$search}%");
-      });
-    }
-
     $consultations = $consultations->orderBy('m.date', 'asc')
       ->orderBy('m.time', 'asc')
-      ->paginate(12)
-      ->appends(['search' => $search]);
+      ->get();
 
-    return view('pages.consultation-records', compact('consultations', 'search'));
+    return view('pages.consultation-records',['pageConfigs'=>$pageConfigs,'breadcrumbs'=>$breadcrumbs], compact('consultations', 'search'));
   }
 
   public function prescriptionPdf(Request $request, $record)
@@ -785,6 +801,7 @@ class PatientMedicalRecordController extends Controller
         'route' => $request->medicine_route[$index] ?? '',
         'frequency' => $request->medicine_frequency[$index] ?? '',
         'duration' => $request->medicine_duration[$index] ?? '',
+        'when_to_take' => $request->medicine_when_to_take[$index] ?? '',
       ];
     }
 
@@ -820,6 +837,7 @@ class PatientMedicalRecordController extends Controller
         'route' => $medicine->route,
         'frequency' => $medicine->frequency,
         'duration' => $medicine->duration,
+        'when_to_take' => $medicine->when_to_take ?? '',
       ];
     })->all();
 
@@ -894,6 +912,8 @@ class PatientMedicalRecordController extends Controller
       'medicine_route.*' => 'nullable|string',
       'medicine_frequency.*' => 'nullable|string',
       'medicine_duration.*' => 'nullable|string',
+      'medicine_when_to_take' => 'nullable|array',
+      'medicine_when_to_take.*' => 'nullable|string|max:255',
       'patient_instructions' => 'nullable|string',
     ]);
   }
@@ -918,6 +938,7 @@ class PatientMedicalRecordController extends Controller
         'route' => $request->medicine_route[$index] ?? '',
         'frequency' => $request->medicine_frequency[$index] ?? '',
         'duration' => $request->medicine_duration[$index] ?? '',
+        'when_to_take' => $request->medicine_when_to_take[$index] ?? '',
         'instruction' => $request->patient_instructions ?? '',
         'created_at' => now(),
       ];

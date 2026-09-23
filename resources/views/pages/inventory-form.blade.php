@@ -4,7 +4,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>Expired Medicine Report</title>
+    <title>Medicine Inventory Report</title>
     <link rel="apple-touch-icon" href="{{asset('images/ico/apple-icon-120.png')}}">
     <link rel="shortcut icon" type="image/x-icon" href="{{asset('images/logo/slsu.ico')}}">
     <base href="https://clinic.southernleytestateu.edu.ph/">
@@ -152,7 +152,7 @@
           <img src="images/logo/bagong_pilipinas.png">
         </div><br><br><br><br><br>
         <p class="aptos" style="font-size: 12px; text-decoration:underline; text-align:center;">Excellence | Service | Leadership and Good Governance | Innovation | Social Responsibility | Integrity | Professionalism | Spirituality</p>
-        <p class="aptos" style="font-weight: 700; font-size: 16px; font-style: italic; text-align:center;">Expired Medicine Report</p>
+        <p class="aptos" style="font-weight: 700; font-size: 16px; font-style: italic; text-align:center;">Medicine Inventoy ({{$monthName}})</p>
       </div>
     </header>
      <footer><hr>
@@ -162,20 +162,25 @@
   </footer>
     <main>
       <div id="printPart" class="aptos">
+        <h4>Medicine Name: {{$medicine_name}}</h4>
         <table class="table" style="color:black;font-size:14px;">
           <thead>
             <tr>
-              <th style="text-align: center;width:20%">MEDICINE NAME</th>
-              <th style="text-align: center;width:5%">ITEM LEFT</th>
-              <th style="text-align: center;width:8%">EXPIRATION DATE</th>
+               <th style="text-align: center;width:8%">Date</th>
+               <th style="text-align: center;width:5%">Additional</th>
+              <th style="text-align: center;width:5%">Stock</th>
+              <th style="text-align: center;width:5%">Dispensed</th>
+             <th style="text-align: center;width:5%">Balance</th>
             </tr>
           </thead>
           <tbody>
             @forelse ($view as $data)
             <tr>
-              <td style="text-align: left;text-transform:capitalize">{{ $data->item_name}}</td>
-              <td style="text-align: right;">{{$data->item_quantity}}</td>
-              <td style="text-align: center;">{{ date('m-d-Y', strtotime($data->expiration_date))}}</td>
+              <td style="text-align:center;">{{  date('m-d-Y', strtotime($data->date))}}</td>
+              <td  style="text-align:right;">{{$data->added_stock}}</td>
+              <td style="text-align:right;">{{$data->item_stock}}</td>
+              <td  style="text-align:right;">{{$data->stock_less}}</td>
+              <td  style="text-align:right;">{{$data->remaining_stock}}</td>
             </tr>
             @empty
             <tr>
@@ -188,10 +193,10 @@
       <div class='aptos' style="position: absolute; bottom: 10%; width: 100%; font-size: 14px;">
         <div style="display: flex; justify-content: space-between;">
           <div>
-            <span>Prepared By:</span><span style="margin: right:40%;">Noted By:</span><br><br><br><br>
-            <span >{{$preparedby->FirstName ?? ''}} {{$preparedby->MiddleName ?? ''}} {{$preparedby->LastName ?? ''}}</span><span style="margin: right:18%"> {{$noted->FirstName }} {{$noted->MiddleName ?? ''}} {{$noted->LastName ?? ''}}</span><br>
-            <span style="margin-right: 45%">{{$preparedby->Role ?? ''}}</span><span>&nbsp;{{$noted->Designation ?? ''}}, {{$noted->Office ?? ''}}</span><br>
-            <span>Date: ___________</span><span  style="margin-left: 35%"> Date: ___________</span>
+            <span>Prepared By:</span><span style="margin: right:38%;">Checked By:</span><br><br><br>
+            <span >{{$preparedby->FirstName ?? ''}} {{$preparedby->MiddleName ?? ''}} {{$preparedby->LastName ?? ''}}</span><span style="margin: right:16.5%"> {{$noted->FirstName ?? ''}} {{$noted->MiddleName ?? ''}} {{$noted->LastName ?? ''}}</span><br>
+            <span style="margin-right: 43.5%">{{$preparedby->Role ?? ''}}</span><span>{{$noted->Designation ?? ''}}, {{$noted->Office ?? ''}}</span><br>
+            <span>Date: ___________</span><span  style="margin-left: 33.5%"> Date: ___________</span>
           </div>
         </div>
       </div>

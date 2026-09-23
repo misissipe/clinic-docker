@@ -19,18 +19,34 @@
 .white {
   background-color: white;
 }
-.red {
-  background-color: #ff5b5c;
+.cancelled {
+  background-color: #FBE4E4;
 }
 
-.green {
-  background-color: #39da8a;
+.disapproved {
+  background-color: #f0b9b9;
 }
 
-.blue {
-  background-color: #5a8dee;
+.approved {
+  background-color: #D3F0DC;
 }
-.gray {
+
+.done {
+  background-color: #99c9a8;
+}
+
+.pending {
+  background-color: #FFF0BE;
+}
+
+.rescheduled {
+  background-color: #EADCF5;
+}
+
+.previous {
+  background-color: #475f7b;
+}
+.noshow {
   background-color: #475f7b;
 }
 .p {
@@ -57,12 +73,15 @@
             <div class="card p-2">
                 <h5>STATUS</h5>
                <div class="col-md-12" id="status">
-                <div class="row"> <div class='col-md-1 box blue'></div>&emsp;<span ><strong style="color:#5a8dee;font-size:16px">Pending</strong></span></div>
-                <div class="row"><div  class='col-md-1 box green'></div>&emsp; <span ><strong style="color:#39da8a;font-size:16px">Approved</strong></span></div>
-                <div class="row"><div class='col-md-1 box red'></div> &emsp;<span  ><strong style="color:#ff5b5c;font-size:16px">Disapproved</strong></span></div>
-                <div class="row"><div class='col-md-1 box orange'></div> &emsp;<span  ><strong style="color:#fdac41;font-size:16px">Reserved</strong></span></div>
+                <div class="row"> <div class='col-md-1 box pending'></div>&emsp;<span ><strong style="font-size:16px">Pending</strong></span></div>
+                <div class="row"><div  class='col-md-1 box rescheduled'></div>&emsp; <span ><strong style="font-size:16px">Reschedule</strong></span></div>
+                <div class="row"><div  class='col-md-1 box approved'></div>&emsp; <span ><strong style="font-size:16px">Approved</strong></span></div>
+                <div class="row"><div  class='col-md-1 box done'></div>&emsp; <span ><strong style="font-size:16px">Done</strong></span></div>
+                <div class="row"><div class='col-md-1 box disapproved'></div> &emsp;<span  ><strong style="font-size:16px">Disapproved</strong></span></div>
+                <div class="row"><div class='col-md-1 box cancelled'></div> &emsp;<span  ><strong style="font-size:16px">Cancelled</strong></span></div>
+                <div class="row"><div class='col-md-1 box noshow'></div> &emsp;<span  ><strong style="font-size:16px">No Show</strong></span></div>
                 {{-- <div class="row"><div class='col-md-1 box gray'></div> &emsp;<span  ><strong style="color:#475f7b;font-size:16px">Cancelled</strong></span></div> --}}
-                <div class="row"><div class='col-md-1 box p'></div> &emsp;<span  ><strong style="color:#a3afbd;font-size:16px">Previous</strong></span></div>
+                <div class="row"><div class='col-md-1 box p'></div> &emsp;<span  ><strong style="font-size:16px">Previous</strong></span></div>
                 {{-- <hr> --}}
                 {{-- <div class="row"><div  class='col-md-1 box light'></div>&emsp; <span ><strong style="color:#a3afbd;font-size:16px">Done</strong></span></div> --}}
                 {{-- <div class="row"><div class="col-md-1 box lightrd"></div>  &emsp;<span><strong style="color:#ff5b5c; font-size:16px;">Rescheduled</strong></span></div> --}}
@@ -298,17 +317,50 @@ $('#calendar').fullCalendar({
             //     element.css("background-color", "#fafafa");
             // }
         } else if (occupiedDates.indexOf(moment(event.date).format('YYYY-MM-DD')) !== -1) {
-            if (event.status === 'Reserved') {
-                button.addClass('btn-warning');
+            if (event.status === 'Rescheduled') {
+                button.css({
+                    'background-color': '#EADCF5',
+                    'border-color': '#CEB6E1',
+                    'color': '#655176'
+                });
             }else if(event.status === 'Cancelled') {
-                button.addClass('btn-secondary');
+               button.css({
+                    'background-color': '#FBE4E4',
+                    'border-color': '#FBE4E4',
+                    'color': '#333'
+                });
             }else if(event.status === 'Pending') {
-                button.addClass('btn-primary');
+              button.css({
+                    'background-color': '#FFF0BE',
+                    'border-color': '#E7D18B',
+                    'color': '#725D24'
+                });
             }else if(event.status === 'Approved') {
-                button.addClass('btn-success');
+                button.css({
+                    'background-color': '#D4F0DF',
+                    'border-color': '#A9D8BA',
+                    'color': '#365B43'
+                });
+            }else if(event.status === 'Done') {
+                button.css({
+                    'background-color': '#E2E8F0',
+                    'border-color': '#CBD5E1',
+                    'color': '#475569'
+                });
             }else if(event.status === 'Disapproved') {
-                button.addClass('btn-danger');
+                 button.css({
+                    'background-color': '#f0b9b9',
+                    'border-color': '#E5BABA',
+                    'color': '#884848'
+                });
+            }else if(event.status === 'No Show') {
+                 button.css({
+                    'background-color': '#ECEDEF',
+                    'border-color': '#ECEDEF',
+                    'color': '#333'
+                });
             }
+            
         }
         console.log("Button Classes:", button.attr('class'));
     },

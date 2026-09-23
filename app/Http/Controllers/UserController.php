@@ -80,8 +80,7 @@ class UserController extends Controller
         return response()->json([]);
       }
 
-      $employees = DB::table('employee_info')
-        ->where('campus', session('campus'))
+      $employees = DB::connection('hrmis')->table('employee')
         ->where(function ($query) use ($search) {
           $query->where('FirstName', 'like', "%{$search}%")
             ->orWhere('MiddleName', 'like', "%{$search}%")
@@ -89,6 +88,7 @@ class UserController extends Controller
             ->orWhere('AgencyNumber', 'like', "%{$search}%")
             ->orWhere('EmailAddress', 'like', "%{$search}%");
         })
+        ->whereNull('deleted_at')
         ->select('id', 'AgencyNumber', 'FirstName', 'MiddleName', 'LastName', 'EmailAddress')
         ->orderBy('LastName')
         ->orderBy('FirstName')
@@ -108,9 +108,9 @@ class UserController extends Controller
     public function manage($employee){
       $this->authorizeAccountManagement();
 
-      $employeeRecord = DB::table('employee_info')
+      $employeeRecord = DB::connection('hrmis')->table('employee')
+       ->where('campus', session('campus'))
         ->where('id', $employee)
-        ->where('campus', session('campus'))
         ->first();
 
       abort_if(!$employeeRecord, 404, 'Employee not found.');
@@ -153,9 +153,8 @@ class UserController extends Controller
     public function saveAccount(Request $request, $employee){
       $this->authorizeAccountManagement();
 
-      $employeeRecord = DB::table('employee_info')
+      $employeeRecord = DB::connection('hrmis')->table('employee')
         ->where('id', $employee)
-        ->where('campus', session('campus'))
         ->first();
 
       abort_if(!$employeeRecord, 404, 'Employee not found.');
@@ -243,6 +242,34 @@ class UserController extends Controller
 
       return redirect()->route('clinic-accounts.manage', $employeeRecord->id)
         ->with('success', 'Clinic account roles and access period saved successfully.');
+    }
+
+    public function deleteAccount($employee)
+    {
+      $this->authorizeAccountManagement();
+
+      $employeeRecord = DB::connection('hrmis')->table('employee')
+        ->where('id', $employee)
+        ->first();
+
+      abort_if(!$employeeRecord, 404, 'Employee not found.');
+      abort_if((string) session('employee_id') === (string) $employeeRecord->id, 422, 'You cannot delete your own clinic account.');
+
+      $deleted = DB::table('account')
+        ->where('employee_id', $employeeRecord->id)
+        ->whereNull('deleted_at')
+        ->update([
+          'deleted_at' => Carbon::now('Asia/Manila'),
+          'updated_at' => Carbon::now('Asia/Manila'),
+        ]);
+
+      if (!$deleted) {
+        return redirect()->route('clinic-accounts.manage', $employeeRecord->id)
+          ->withErrors(['account' => 'No active clinic account was found.']);
+      }
+
+      return redirect()->route('clinic-accounts.index')
+        ->with('success', 'Clinic account deleted successfully.');
     }
 
     private function authorizeAccountManagement()

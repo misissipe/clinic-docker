@@ -5,8 +5,9 @@
 @section('content')
 <style>
     .my-appts{
-        max-width:1050px;
-        margin:auto;
+        width:100%;
+        max-width:none;
+        margin:0;
         padding:24px
     }
     .my-card{

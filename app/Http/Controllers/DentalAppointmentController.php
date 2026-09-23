@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Validation\Rule;
 
 class DentalAppointmentController extends Controller
     {
@@ -36,6 +37,14 @@ class DentalAppointmentController extends Controller
         'Rescheduled'
     ];
 
+    private function serviceStatuses()
+    {
+        return DB::table('dental_services')
+            ->whereIn('services', array_keys($this->services))
+            ->pluck('status', 'services')
+            ->toArray();
+    }
+
     public function create()
     {
         $this->updatePastAppointmentStatuses();
@@ -56,6 +65,7 @@ class DentalAppointmentController extends Controller
         $patientId = $this->resolveEmployeeSessionPatientId($patientId);
 
         $services = $this->services;
+        $serviceStatuses = $this->serviceStatuses();
         $patientDetails = $this->getPatientDetails($patientId);
         $upcomingAppointment = null;
         $latestAppointment = null;
@@ -112,6 +122,7 @@ class DentalAppointmentController extends Controller
         return view('pages.appointment-dental', compact(
             'user',
             'services',
+            'serviceStatuses',
             'patientDetails',
             'upcomingAppointment',
             'latestAppointment',
@@ -191,9 +202,14 @@ class DentalAppointmentController extends Controller
 
     public function store(Request $request)
     {
+        $availableServices = array_keys(array_filter(
+            $this->serviceStatuses(),
+            function ($status) { return (int) $status === 0; }
+        ));
+
         $request->validate([
             'service' => 'required|array|min:1',
-            'service.*' => 'required|in:' . implode(',', array_keys($this->services)),
+            'service.*' => ['required', Rule::in($availableServices)],
             'appointment_date' => 'required|date|after_or_equal:today',
             'appointment_time' => 'required|in:' . implode(',', $this->timeSlots),
             'patient_type' => 'required|in:Student,Employee',
@@ -205,6 +221,7 @@ class DentalAppointmentController extends Controller
             'additional_notes' => 'nullable|max:200'
         ], [
             'service.required' => 'Please select at least one dental service.',
+            'service.*.in' => 'A selected dental service is unavailable. Please choose an available service.',
             'appointment_time.required' => 'Please select an available time.'
         ]);
 
@@ -465,12 +482,6 @@ class DentalAppointmentController extends Controller
             ->where('patientId', $patientId)
             ->where('campus', session('campus'))
             ->firstOrFail();
-
-        if (strcasecmp((string) $appointment->status, 'Rescheduled') !== 0) {
-            return response()->json([
-                'message' => 'This appointment is no longer awaiting a reschedule response.',
-            ], 422);
-        }
 
         $attendanceAccepted = stripos(
             (string) $appointment->remarks,

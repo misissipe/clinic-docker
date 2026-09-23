@@ -2,14 +2,14 @@
 @section('title', $account ? 'Manage Clinic Account' : 'Register Clinic Account')
 
 @section('page-styles')
-<link rel="stylesheet" href="{{ asset('css/pages/clinic-account-manage.css') }}">
+<link rel="stylesheet" href="{{ asset('css/pages/clinic-account-manage.css') }}?v=20260923-4">
 @endsection
 
 @section('content')
 @php
   $assignments = old('assignments', $roleAssignments);
   $roleDetails = \App\Http\Controllers\RoleController::WORKSPACE_DETAILS;
-  $defaultCampus = (int) $employeeRecord->campus;
+  $defaultCampus = (int) session('campus', 1);
   $adminSelected = !empty($assignments['Admin']['selected']);
 @endphp
 
@@ -21,9 +21,11 @@
         <h1>Manage User Roles</h1>
         <p>Assign workspaces and set the user's access period.</p>
       </div>
-      <a href="{{ route('clinic-accounts.index') }}" class="close-button" aria-label="Close">
-        <i class="bx bx-x"></i>
-      </a>
+      <div class="header-actions">
+        <a href="{{ route('clinic-accounts.index') }}" class="close-button" aria-label="Close">
+          <i class="bx bx-x"></i>
+        </a>
+      </div>
     </header>
 
     <form method="POST" action="{{ route('clinic-accounts.save', $employeeRecord->id) }}">
@@ -64,6 +66,9 @@
               >
               @error('access_end')<span class="field-error">{{ $message }}</span>@enderror
             </div>
+            @if($account)
+              <button type="button" id="delete-account-button" class="btn account-delete-button">Delete Account</button>
+            @endif
             <div id="unlimited-access" class="unlimited-access {{ $adminSelected ? '' : 'd-none' }}">
               <i class="bx bx-infinite"></i>
               <span>Administrator has unlimited access</span>
@@ -78,9 +83,11 @@
             <h2>Account Roles</h2>
             <p>Select one or more workspaces for this user.</p>
           </div>
-          <div class="date-tip">
-            <i class="bx bx-calendar-check"></i>
-            <span>The account dates above apply to all selected roles.</span>
+          <div class="roles-tools">
+            <div class="date-tip">
+              <i class="bx bx-calendar-check"></i>
+              <span>The account dates above apply to all selected roles.</span>
+            </div>
           </div>
         </div>
 
@@ -124,13 +131,19 @@
           <span>At least one role must remain selected.</span>
         </div>
         <div class="account-actions">
-          <a href="{{ route('clinic-accounts.index') }}" class="btn btn-light">Cancel</a>
           <button type="submit" class="btn btn-primary">
             {{ $account ? 'Update Account' : 'Register Account' }}
           </button>
+          <a href="{{ route('clinic-accounts.index') }}" class="btn btn-light">Cancel</a>
         </div>
       </footer>
     </form>
+    @if($account)
+      <form id="delete-account-form" method="POST" action="{{ route('clinic-accounts.delete', $employeeRecord->id) }}">
+        @csrf
+        @method('DELETE')
+      </form>
+    @endif
   </div>
 </div>
 @endsection
@@ -175,6 +188,25 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 
   updateAccountDates();
+
+  var deleteButton = document.getElementById('delete-account-button');
+  if (deleteButton) {
+    deleteButton.addEventListener('click', function () {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Delete clinic account?',
+        text: 'This employee will lose access to all assigned clinic workspaces.',
+        showCancelButton: true,
+        confirmButtonText: 'Delete Account',
+        cancelButtonText: 'Cancel',
+        confirmButtonColor: '#dc3545'
+      }).then(function (result) {
+        if (result.isConfirmed) {
+          document.getElementById('delete-account-form').submit();
+        }
+      });
+    });
+  }
 });
 </script>
 @if(session('success'))

@@ -359,9 +359,12 @@ class appointmentController extends Controller
         ];
 
         $statusAppointments = DB::table('appointment')
-            ->whereIn('status', ['Pending', 'For Approval', 'Approved', 'Disapproved', 'Rescheduled', 'No Show'])
+            ->whereIn('status', ['Pending', 'For Approval', 'Approved', 'Disapproved', 'Rescheduled', 'No Show', 'Done', 'Cancelled', 'Canceled'])
             ->where('campus', session('campus'))
-            ->whereNull('deleted_at')
+            ->where(function ($query) {
+                $query->whereNull('deleted_at')
+                    ->orWhereIn('status', ['Cancelled', 'Canceled']);
+            })
             ->orderByRaw("CASE WHEN status IN ('Pending', 'For Approval') THEN 0 ELSE 1 END")
             ->orderBy('date')
             ->orderBy('time')
@@ -374,6 +377,8 @@ class appointmentController extends Controller
             'disapproved' => $statusAppointments->where('status', 'Disapproved')->count(),
             'rescheduled' => $statusAppointments->where('status', 'Rescheduled')->count(),
             'no-show' => $statusAppointments->where('status', 'No Show')->count(),
+            'done' => $statusAppointments->where('status', 'Done')->count(),
+            'cancelled' => $statusAppointments->whereIn('status', ['Cancelled', 'Canceled'])->count(),
         ];
 
         return view('pages.view-status-appointment', [
@@ -483,9 +488,82 @@ class appointmentController extends Controller
                 'reschedule_at' => Carbon::now('Asia/Manila'),
             ]);
 
+        \App\Services\ClinicNotifications::publish('dental-reschedule:' . $appointment->id . ':' . \Illuminate\Support\Str::uuid(), $appointment->campus, ['Dentist', 'Attendant'], 'A dental appointment was rescheduled.', '/view-appointment');
+
         return response()->json([
             'status' => 200,
             'success' => 'Appointment rescheduled successfully!'
+        ]);
+    }
+
+    public function cancelReschedule(Request $request)
+    {
+        $request->validate([
+            'id' => 'required|exists:appointment,id',
+        ]);
+
+        $appointment = DB::table('appointment')
+            ->where('id', $request->id)
+            ->where('campus', session('campus'))
+            ->whereNull('deleted_at')
+            ->first();
+
+        if (!$appointment) {
+            return response()->json([
+                'error' => 'Appointment not found.',
+            ], 404);
+        }
+
+        if ($appointment->status !== 'Rescheduled') {
+            return response()->json([
+                'error' => 'Only a rescheduled appointment can have its reschedule cancelled.',
+            ], 422);
+        }
+
+        if (!$appointment->original_date || !$appointment->original_time) {
+            return response()->json([
+                'error' => 'The original appointment schedule is unavailable.',
+            ], 422);
+        }
+
+        $slotIsOccupied = DB::table('appointment')
+            ->where('id', '!=', $appointment->id)
+            ->where('date', $appointment->original_date)
+            ->where('time', $appointment->original_time)
+            ->where('status', '!=', 'Cancelled')
+            ->where('campus', session('campus'))
+            ->whereNull('deleted_at')
+            ->exists();
+
+        if ($slotIsOccupied) {
+            return response()->json([
+                'error' => 'The original appointment date and time are already occupied.',
+            ], 409);
+        }
+
+        DB::table('appointment')
+            ->where('id', $appointment->id)
+            ->where('status', 'Rescheduled')
+            ->update([
+                'date' => $appointment->original_date,
+                'time' => $appointment->original_time,
+                'original_date' => null,
+                'original_time' => null,
+                'status' => 'Approved',
+                'remarks' => null,
+                'reschedule_at' => null,
+            ]);
+
+        \App\Services\ClinicNotifications::publish(
+            'dental-reschedule-cancelled:' . $appointment->id . ':' . \Illuminate\Support\Str::uuid(),
+            $appointment->campus,
+            ['Dentist', 'Attendant'],
+            'A dental appointment reschedule was cancelled.',
+            '/view-appointment'
+        );
+
+        return response()->json([
+            'success' => 'Reschedule cancelled and the original appointment restored.',
         ]);
     }
     public function create(Request $request){
@@ -561,6 +639,9 @@ class appointmentController extends Controller
                     'status' => 'Approved',
                     'approve_at' => Carbon::now('Asia/Manila')
                 ]);
+                if ($cert->status !== $status) {
+                    \App\Services\ClinicNotifications::publish('dental-status:' . $id . ':' . \Illuminate\Support\Str::uuid(), $cert->campus, ['Dentist', 'Attendant'], 'Dental appointment updated to ' . $status . '.', '/view-appointment');
+                }
                 return response()->json([
                     'success' => 'Approved successfully.'
                 ]);
@@ -576,6 +657,9 @@ class appointmentController extends Controller
                     'remarks' => $remarks,
                     'disapprove_at' => Carbon::now('Asia/Manila')
                 ]);
+                if ($cert->status !== $status) {
+                    \App\Services\ClinicNotifications::publish('dental-status:' . $id . ':' . \Illuminate\Support\Str::uuid(), $cert->campus, ['Dentist', 'Attendant'], 'Dental appointment updated to ' . $status . '.', '/view-appointment');
+                }
                 return response()->json([
                     'success' => 'Disapproved successfully.'
                 ]);
@@ -591,6 +675,9 @@ class appointmentController extends Controller
                     'remarks' => trim((string) $remarks),
                     'deleted_at' => Carbon::now('Asia/Manila')
                 ]);
+                if ($cert->status !== $status) {
+                    \App\Services\ClinicNotifications::publish('dental-status:' . $id . ':' . \Illuminate\Support\Str::uuid(), $cert->campus, ['Dentist', 'Attendant'], 'Dental appointment updated to ' . $status . '.', '/view-appointment');
+                }
                 return response()->json([
                     'success' => 'Cancelled successfully.'
                 ]);
@@ -614,6 +701,9 @@ class appointmentController extends Controller
                     ], 409);
                 }
 
+                if ($cert->status !== $status) {
+                    \App\Services\ClinicNotifications::publish('dental-status:' . $id . ':' . \Illuminate\Support\Str::uuid(), $cert->campus, ['Dentist', 'Attendant'], 'Dental appointment updated to ' . $status . '.', '/view-appointment');
+                }
                 return response()->json([
                     'success' => $status === 'Done'
                         ? 'Appointment marked as done successfully.'
