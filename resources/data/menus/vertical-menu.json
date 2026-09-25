@@ -76,14 +76,6 @@
       "icon": "upload"
     },
     {
-      "url": "patient-status",
-      "name": "Log-out",
-      "i18n": "User",
-      "icon": "box",
-      "badge": "statusCount",
-      "badgeClass": "bg-danger"
-    },
-    {
       "url": "medical-record-of-visit",
       "name": "Log Book",
       "i18n": "User",
@@ -154,7 +146,7 @@
       "url": "patient-illness-summary",
       "name": "Patient Illness Summary",
       "i18n": "User",
-      "icon": "bar-chart-alt-2"
+      "icon": "mmorph-folder"
     },
     {
       "navheader": "Doctor"

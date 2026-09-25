@@ -87,7 +87,7 @@ class InventoryController extends Controller
       $medicine_names = $medicine->pluck('item_name', 'id')->toArray();
       $expiration_date = $medicine->pluck('expiration_date', 'id')->toArray(); 
       
-      $inventory_data = Inventory::selectRaw('stockId, MONTH(date) as month, SUM(stock_less) as total_released')
+      $inventory_data = Inventory::selectRaw('stockId, MONTH(date) as month, COALESCE(SUM(stock_less), 0) as total_released')
         ->where('campus', session('campus'))
         ->whereYear('date',$year )
         ->whereIn('stockId', array_keys($medicine_names))
@@ -110,6 +110,14 @@ class InventoryController extends Controller
       foreach ($monthly_release as $id => $months) {
           $release_totals[$id] = array_sum($months);
       }
+
+      // Only display medicines with inventory releases for the selected year.
+      $release_totals = array_filter($release_totals, function ($total) {
+          return (float) $total > 0;
+      });
+      $medicine_names = array_intersect_key($medicine_names, $release_totals);
+      $expiration_date = array_intersect_key($expiration_date, $release_totals);
+      $monthly_release = array_intersect_key($monthly_release, $release_totals);
       
       $total_released_all_medicines = array_sum($release_totals); 
       

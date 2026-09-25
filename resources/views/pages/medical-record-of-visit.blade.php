@@ -194,19 +194,10 @@
                             <option value="Employee">Employee</option>
                           </select> --}}
                             <select id="monthSearch" name="monthSearch" class="form-control" aria-label="Default select example" style="width:10%;margin-right:10px" required>
-                                <option value="" disabled selected>-Month-</option>
-                                <option value="01">January</option>
-                                <option value="02">February</option>
-                                <option value="03">March</option>
-                                <option value="04">April</option>
-                                <option value="05">May</option>
-                                <option value="06">June</option>
-                                <option value="07">July</option>
-                                <option value="08">August</option>
-                                <option value="09">September</option>
-                                <option value="10">October</option>
-                                <option value="11">November</option>
-                                <option value="12">December</option>
+                                <option value="" selected disabled>Select Month</option>
+                            @foreach(range(1, 12) as $month)
+                              <option value="{{ $month }}">{{ date('F', mktime(0, 0, 0, $month, 1)) }}</option>
+                            @endforeach`
                             </select>
                              <select name="date_range" class="form-control" style="width:12%;margin-right:10px" id="date_range">
                                 <option value="" selected disabled>-Date Range-</option>

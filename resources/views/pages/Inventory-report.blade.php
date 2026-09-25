@@ -43,6 +43,33 @@
    .border{
      border-color: rgb(0, 0, 0);
    }
+   #show,
+   .inventory-report-card-body,
+   #recordTable_wrapper {
+     min-width: 0;
+     max-width: 100%;
+   }
+   .inventory-report-card-body {
+     overflow: hidden;
+   }
+   #recordTable th,
+   #recordTable td {
+     white-space: nowrap;
+     vertical-align: middle;
+   }
+   #recordTable th:first-child,
+   #recordTable td:first-child {
+     min-width: 220px;
+     white-space: normal;
+   }
+   #recordTable_wrapper .dataTables_scrollBody {
+     -webkit-overflow-scrolling: touch;
+   }
+   @media (max-width: 767.98px) {
+     .inventory-report-card-body {
+       padding: 1rem;
+     }
+   }
  </style>
  <style>
    @media screen {
@@ -119,7 +146,7 @@
     </div>
     <div class="col-md-10" id="show" style="display:none;">
         <div class="card">
-            <div class="card-body">
+            <div class="card-body inventory-report-card-body">
                 <table class="table table-sm recordTable table-bordered" id="recordTable" style="text-align:center;">
                     <thead>
                         <tr>
@@ -268,8 +295,9 @@ $(document).ready(function() {
         let yearlyTotal = 0;
 
         const monthlyData = Object.keys(monthlyTotals).map(month => {
-            yearlyTotal += monthlyTotals[month];
-            return `<td style="text-align:center">${monthlyTotals[month]}</td>`;
+            const monthlyTotal = Number(monthlyTotals[month]) || 0;
+            yearlyTotal += monthlyTotal;
+            return `<td style="text-align:center">${monthlyTotal}</td>`;
         }).join('');
 
         const row = `
@@ -293,10 +321,59 @@ $(document).ready(function() {
        
         if (!$.fn.DataTable.isDataTable('#recordTable')) {
             $('#recordTable').DataTable({
-                "ordering": false
+                ordering: false,
+                autoWidth: false,
+                scrollX: true,
+                scrollCollapse: true,
+                dom: 'Bfrtip',
+                buttons: [
+                    'copy',
+                    'csv',
+                    'excel',
+                    {
+                        extend: 'pdfHtml5',
+                        orientation: 'landscape',
+                        pageSize: 'A4'
+                    },
+                    {
+                        extend: 'print',
+                        customize: function (printWindow) {
+                            $(printWindow.document.head).append(
+                                `<style>
+                                    @page { size: A4 landscape; margin: 10mm; }
+                                    @media print {
+                                        body, body * {
+                                            visibility: visible !important;
+                                        }
+                                        body {
+                                            margin: 0 !important;
+                                        }
+                                        table {
+                                            width: 100% !important;
+                                            font-size: 8pt !important;
+                                        }
+                                        table th, table td {
+                                            white-space: normal !important;
+                                            padding: 4px !important;
+                                        }
+                                    }
+                                </style>`
+                            );
+
+                            $(printWindow.document.body)
+                                .find('table')
+                                .addClass('compact')
+                                .css('width', '100%');
+                        }
+                    }
+                ]
             });
         } else {
-            $('#recordTable').DataTable().clear().rows.add($('#data-table').find('tr')).draw();
+            $('#recordTable').DataTable()
+                .clear()
+                .rows.add($('#data-table').find('tr'))
+                .draw()
+                .columns.adjust();
         }
     }
 });

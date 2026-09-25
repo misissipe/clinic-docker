@@ -8,7 +8,7 @@
       "icon": "dashboard"
     },
     {
-      "navheader": "Medical Services"
+      "navheader": "Nurse"
     },
     {
       "url": "student-information",
@@ -24,6 +24,7 @@
         "name": "Employee"
       }]
     },
+     
     {
       "url": "patient-monitoring-search",
       "name": "Patient Record",
@@ -37,6 +38,12 @@
         "url": "patient-view-record",
         "name": "View Record"
       }]
+    },
+    {
+      "url": "consultation-records",
+      "name": "Consultation Record",
+      "i18n": "User",
+      "icon": "user"
     },
     {
       "url": "lab-results",
@@ -137,14 +144,36 @@
          "name": "Generate"
        }]
      },
-     {
+    {
       "url": "borrow-slip",
       "name": "Borrowers Slip",
       "i18n": "User",
       "icon": "morph-doc"
     },
     {
-      "navheader": "Calendar"
+      "url": "patient-illness-summary",
+      "name": "Patient Illness Summary",
+      "i18n": "User",
+      "icon": "morph-folder"
+    },
+    {
+      "navheader": "Doctor"
+    },
+    {
+      "url": "doctor-consultations",
+      "name": "Doctor Consultations",
+      "i18n": "User",
+      "icon": "pen"
+    },
+    {
+      "url": "patient-view-record",
+      "name": "Patient Record",
+      "i18n": "User",
+      "icon": "pulse"
+    },
+    
+    {
+      "navheader": "Attendant"
     },
     {
       "url": "calendar-appointment",
@@ -152,23 +181,12 @@
       "i18n": "User",
       "icon": "calendar"
     },
-    {
-      "navheader": "Appointment"
-    },
+    
     {
       "url": "dental-appointment",
       "name": "Book an Appointment",
       "i18n": "User",
       "icon": "morph-bookmark"
-    },
-    {
-      "url": "dental-appointment-history",
-      "name": "View Appointment History",
-      "i18n": "User",
-      "icon": "clock"
-    },
-    {
-      "navheader": "Dental Services"
     },
     {
       "url": "appointment",
@@ -327,7 +345,7 @@
       "navheader": "Patient"
     },
 {
-      "url": "add-new-user",
+      "url": "search-student",
       "name": "Information",
       "i18n": "User",
       "icon": "users",
@@ -341,7 +359,12 @@
       "name": "Employee"
       }]
     },
-    
+    {
+      "url": "doctor-leaves",
+      "name": "Doctor Leave",
+      "i18n": "Users",
+      "icon": "calendar"
+    },
     {
       "navheader": "Settings"
     },

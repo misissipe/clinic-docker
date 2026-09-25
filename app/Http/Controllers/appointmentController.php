@@ -359,15 +359,9 @@ class appointmentController extends Controller
         ];
 
         $statusAppointments = DB::table('appointment')
-            ->whereIn('status', ['Pending', 'For Approval', 'Approved', 'Disapproved', 'Rescheduled', 'No Show', 'Done', 'Cancelled', 'Canceled'])
             ->where('campus', session('campus'))
-            ->where(function ($query) {
-                $query->whereNull('deleted_at')
-                    ->orWhereIn('status', ['Cancelled', 'Canceled']);
-            })
-            ->orderByRaw("CASE WHEN status IN ('Pending', 'For Approval') THEN 0 ELSE 1 END")
-            ->orderBy('date')
-            ->orderBy('time')
+            ->orderBy('date', 'desc')
+            ->orderBy('time', 'desc')
             ->get();
 
         $statusCounts = [

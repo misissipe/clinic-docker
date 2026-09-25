@@ -880,11 +880,12 @@ class PatientMedicalRecordController extends Controller
 
     $medical->purpose = json_encode(array_values(array_unique($purposes)));
     $medical->recommendation = $request->recommendation;
-    $medical->status = 'Active';
+    $medical->logged_out = Carbon::now('Asia/Manila')->format('H:i:s');
+    $medical->status = 'InActive';
     $medical->save();
 
     return redirect()->route('medical.consultation-records')
-      ->with('success', 'Patient treatment record completed successfully.');
+      ->with('success', 'Patient treatment record completed and logged out successfully.');
   }
 
   private function patientForRecord(Medical $medical)

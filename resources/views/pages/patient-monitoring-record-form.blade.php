@@ -10,11 +10,49 @@
   <base href="https://clinic.southernleytestateu.edu.ph/">
 </head>
 <style>
-  @page {
-    size: A4 portrait;
-    margin: 39mm 8mm 19mm;
-  }
+@font-face {
+    font-family: 'Aptos';
+    src: url("file://{{ public_path('fonts/Aptos-Regular.ttf') }}") format('truetype');
+    font-weight: 400;
+    font-style: normal;
+}
 
+@font-face {
+    font-family: 'Aptos';
+    src: url("file://{{ public_path('fonts/Aptos-Bold.ttf') }}") format('truetype');
+    font-weight: 700;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Aptos';
+    src: url("file://{{ public_path('fonts/Aptos-Italic.ttf') }}") format('truetype');
+    font-weight: 400;
+    font-style: italic;
+}
+
+.aptos {
+    font-family: 'Aptos';
+}
+
+body {
+    font-family: 'Aptos';
+}
+  div.header{
+    width:100%;
+    height: 100px;
+    margin-bottom: 2%;
+  }
+  div.image{
+    width:70px;
+    float: left;
+    height:100%;
+  }
+  
+  img{
+    width: 100%;
+    height:100%;
+  }
   table{
     width: 100% !important;
   }
@@ -22,55 +60,47 @@
     text-align: left;
     margin-left: 20%;
   }
+  div.logo{
+    width: 320px;
+    height: 105%;
+  }
   p{
-      font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
-      font-size: 10px;
+     font-family: 'Aptos';
+      font-size: 15px;
   }
   .page-break {
       page-break-inside: auto;
   }
+  div.slsu{
+    width:12%;
+    font-size: 14px;
+    float:right;
+    margin-right: 160px;
+    height:88%;
+    text-align:center;
+  }
   header {
     position: fixed;
-    top: -35mm;
-    left: 0;
-    right: 0;
-    height: 33mm;
+    top: 0cm;
+    left: 0cm;
+    right: 0cm;
+    height: 4cm;
     font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
   }
   body {
-    margin: 0;
-    padding: 0;
+    margin-top: 4.5cm;
+    margin-left: 1cm;
+    margin-right: 1cm;
+    margin-bottom: 2cm; 
     font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
   }
   footer {
     position: fixed;
-    bottom: -16mm;
-    left: 0;
-    right: 0;
-    height: 14mm;
+    bottom: 0cm;
+    left: 1cm;
+    right: 1cm;
+    height: 1.5cm;
     font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
-  }
-  .header-layout, .footer-layout {
-    border: 0;
-    table-layout: fixed;
-  }
-  .header-layout td, .footer-layout td {
-    border: 0;
-    padding: 0;
-    vertical-align: middle;
-  }
-  .campus-logo { width: 68mm; height: auto; }
-  .bagong-logo { width: 18mm; height: auto; }
-  .document-code { width: 31mm; height: auto; }
-  .quality-logo { width: 16mm; height: auto; }
-  .socotec-logo { width: 30mm; height: auto; }
-  #recordTable {
-    table-layout: fixed;
-    font-size: 9px !important;
-  }
-  #recordTable th, #recordTable td {
-    overflow-wrap: break-word;
-    word-wrap: break-word;
   }
   tbody { vertical-align: top; }
   table,td,th{
@@ -108,38 +138,34 @@
 </style>
 <body>
   <header>
-    @php $campus_code = session('campus'); @endphp
-    <table class="header-layout">
-      <tr>
-        <td style="width: 13%;"></td>
-        <td style="width: 58%; text-align: center;">
-          @if($campus_code == 1)<img class="campus-logo" src="images/logo/main-campus-logo.png" alt="SLSU">@endif
-          @if($campus_code == 2)<img class="campus-logo" src="images/logo/maasin-logo.png" alt="SLSU Maasin">@endif
-          @if($campus_code == 3)<img class="campus-logo" src="images/logo/tomas-oppus.png" alt="SLSU Tomas Oppus">@endif
-          @if($campus_code == 4)<img class="campus-logo" src="images/logo/bontoc.png" alt="SLSU Bontoc">@endif
-          @if($campus_code == 5)<img class="campus-logo" src="images/logo/san-juan.png" alt="SLSU San Juan">@endif
-          @if($campus_code == 6)<img class="campus-logo" src="images/logo/hinunangan.png" alt="SLSU Hinunangan">@endif
-        </td>
-        <td style="width: 16%; text-align: center;"><img class="bagong-logo" src="images/logo/bagong_pilipinas.png" alt="Bagong Pilipinas"></td>
-        <td style="width: 13%;"></td>
-      </tr>
-    </table>
-    <p style="margin: 1mm 0 0; font-size: 7px; text-decoration: underline; text-align: center;">Excellence | Service | Leadership and Good Governance | Innovation | Social Responsibility | Integrity | Professionalism | Spirituality</p>
-    <p style="margin: 1mm 0 0; font-weight: 700; font-size: 11px; font-style: italic; text-align: center;">Patient Monitoring Record Form</p>
+    <div class="header">
+      <div class="image">
+        <div class="logo" style="margin-left: 3.5cm;">
+          @php
+              $campus_code = session('campus');
+          @endphp
+          @if($campus_code == 1)<img class="logo" src="images/logo/main-campus-logo.png" alt="">@endif
+          @if($campus_code == 2)<img class="logo" src="images/logo/maasin-logo.png" alt="">@endif
+          @if($campus_code == 3)<img class="logo" src="images/logo/tomas-oppus.png" alt="">@endif
+          @if($campus_code == 4)<img class="logo" src="images/logo/bontoc.png" alt="">@endif
+          @if($campus_code == 5)<img class="logo" src="images/logo/san-juan.png" alt="">@endif
+          @if($campus_code == 6)<img class="logo" src="images/logo/hinunangan.png" alt="">@endif
+        </div>
+      </div>
+      <div class="slsu">
+        <img src="images/logo/bagong_pilipinas.png">
+      </div><br><br><br><br><br>
+      <p class='aptos' style="font-size: 12px; text-decoration:underline; text-align:center;">Excellence | Service | Leadership and Good Governance | Innovation | Social Responsibility | Integrity | Professionalism | Spirituality</p>
+      <p class='aptos' style="font-weight: 700; font-size: 16px; font-style: italic; text-align:center;">Patient Monitoring Record Form</p>
+    </div>
   </header>
   <footer>
-    <table class="footer-layout">
-      <tr>
-        <td style="width: 30%; text-align: left;"><img class="document-code" src="images/logo/SLSU-QF-MD03.png" alt="SLSU-QF-MD03"></td>
-        <td style="width: 15%;"></td>
-        <td style="width: 17%; text-align: right;"><img class="quality-logo" src="images/logo/qs_star.png" alt="Quality Standard"></td>
-        <td style="width: 25%; text-align: center;"><img class="socotec-logo" src="images/logo/socotec.png" alt="ISO 9001"></td>
-        <td style="width: 13%;"></td>
-      </tr>
-    </table>
+    <div>
+      <img src="images/logo/SLSU-QF-MD03.png" alt="" style="width: 150px; height:60px; float-left; vertical-align: top;margin-top:5px;margin-right:240px"> <img src="images/logo/qs_star.png" alt="" style="width: 80px; height:70px; vertical-align: middle"> <img src="images/logo/socotec.png" alt="" style="width: 140px; height:65px; float: right;"> </span><br>
+    </div>
   </footer>
   <main>
-    <div class="print-margin" style="font-size:12px">
+    <div class="print-margin aptos" style="font-size:12px">
       <div style="text-align: right">
         <div >Course:
           <input  class=" course cert" name="" type="text" value="{{$info->accro ?? ''}}" id="fullname" style="width:10%;">
@@ -150,7 +176,7 @@
           <input  class="cert" name="" type="text" value="{{$addYear ?? ''}}" id="fullname" style="width:10%;">
         </div>
       </div><br>
-      <div class="form-group col-sm-12" style="font-size:12px">
+      <div class="form-group col-sm-12" style="font-size:12px;font-family:Aptos">
         <div class="row">
             Name:
             <input  class=" cert lastname" type="text" value="{{ ucwords(strtolower($info->LastName))}}" id="example-text-input" style="width:20%;text-align:center;">&nbsp;
@@ -168,20 +194,20 @@
           
         </div>
       </div><br>
-      <table class="table table-sm  table-bordered table-striped" id="recordTable"  style="font-size:12px">
+      <table class="table table-sm  table-bordered table-striped aptos" id="recordTable"  style="font-size:12px;">
         <thead>
           <tr>
-            <th style="color:rgb(0, 0, 0);text-align:center;width:12%">Date</th>
-            <th style="color:rgb(0, 0, 0);text-align:center;width:31%">Chief Complaints/Findings</th>
-            <th style="color:rgb(0, 0, 0);text-align:center;width:22%">Physiological Parameters</th>
-            <th style="color:rgb(0, 0, 0);text-align:center;width:35%">Treatment/Recommendation</th>
+            <th style="color:rgb(0, 0, 0);text-align:center;width:10%;font-family:'Aptos'">Date</th>
+            <th style="color:rgb(0, 0, 0);text-align:center;width:30%;font-family:'Aptos'">Chef Complaints/Findings</th>
+            <th style="color:rgb(0, 0, 0);text-align:center;width:30%;font-family:'Aptos'">Physiological Parameters</th>
+            <th style="color:rgb(0, 0, 0);text-align:center;width:30%;font-family:'Aptos'">Treatment/Recommendation</th>
           </tr>
         </thead>
         <tbody id="viewAllRecord">
           @foreach ($view as $data)
             <tr>
               <td style="text-align:center">{{ date('m-d-Y', strtotime($data->date)) }}</td>
-              <td>{{ ucwords(strtolower(utf8_decode($data->findings))) }}</td>
+              <td>{{ ($data->findings)}}</td>
               <td>
                 {!! $data->parameters
                     ? $data->parameters
@@ -195,7 +221,7 @@
                 !!}
                </td>                  
               <td style="position: relative; height: 120px;">
-                {{ ucwords(strtolower(utf8_decode($data->recommendation))) }}
+                {{ ($data->recommendation) }}
                 {{-- <span style="position: absolute; bottom: 0; right: 0; width: 50%; text-align: center; padding-top: 2px; border-top: 1px solid black;">
                   Signature
                 </span> --}}

@@ -19,6 +19,7 @@ document.addEventListener('DOMContentLoaded', function () {
   var list = document.getElementById('clinicNotificationList');
   var badge = document.getElementById('clinicUnread');
   var busy = false;
+  var unreadCount = 0;
   function post(path) {
     return fetch(path, { method: 'POST', headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content, 'Accept': 'application/json' } })
       .then(function (response) { if (!response.ok) throw new Error('Unable to update notification'); return response.json(); });
@@ -29,6 +30,7 @@ document.addEventListener('DOMContentLoaded', function () {
     fetch(base, { headers: { 'Accept': 'application/json' }, cache: 'no-store' })
       .then(function (response) { if (!response.ok) throw new Error('Unable to load notifications'); return response.json(); })
       .then(function (data) {
+        unreadCount = data.unread;
         badge.hidden = !data.unread;
         badge.textContent = data.unread > 99 ? '99+' : data.unread;
         document.getElementById('clinicNotificationTitle').textContent = data.unread ? data.unread + ' unread notifications' : 'Notifications';
@@ -47,6 +49,15 @@ document.addEventListener('DOMContentLoaded', function () {
           body.appendChild(message); body.appendChild(date); media.appendChild(iconWrap); media.appendChild(body); button.appendChild(media);
           button.addEventListener('click', function () {
             if (item.id === null) { window.location.assign(item.path); return; }
+            if (!item.read_at) {
+              item.read_at = new Date().toISOString();
+              button.classList.add('read-notification');
+              message.classList.remove('text-bold-500');
+              unreadCount = Math.max(0, unreadCount - 1);
+              badge.hidden = unreadCount === 0;
+              badge.textContent = unreadCount > 99 ? '99+' : unreadCount;
+              document.getElementById('clinicNotificationTitle').textContent = unreadCount ? unreadCount + ' unread notifications' : 'Notifications';
+            }
             post(base + '/' + item.id + '/read').then(function (data) { window.location.assign(data.path); }).catch(function () { button.disabled = false; });
             button.disabled = true;
           });

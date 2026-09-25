@@ -20,9 +20,10 @@ class ClinicNotificationController extends Controller
     {
         $notification = ClinicNotifications::visible()->where('n.id', $id)->select('n.*')->first();
         abort_unless($notification, 404);
-        DB::table('clinic_notification_reads')->insertOrIgnore([
-            'notification_id' => $notification->id, 'reader' => ClinicNotifications::reader(), 'read_at' => now(),
-        ]);
+        DB::table('clinic_notification_reads')->updateOrInsert(
+            ['notification_id' => $notification->id, 'reader' => ClinicNotifications::reader()],
+            ['read_at' => now()]
+        );
 
         return response()->json(['path' => $notification->path]);
     }
