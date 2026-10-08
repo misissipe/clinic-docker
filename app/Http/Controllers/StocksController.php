@@ -169,9 +169,13 @@ class StocksController extends Controller
 
         $viewModal = Stocks::where('id',$request->id)
           ->where('campus', session('campus'))
-          ->first();
+          ->whereNull('deleted_at')
+          ->firstOrFail();
 
-        $measurements = DB::connection('mysql')->table('unit_of_measurement')->get();
+        $measurements = DB::connection('mysql')->table('unit_of_measurement')
+          ->where('campus', session('campus'))
+          ->orderBy('unit_of_measurement')
+          ->get();
       
         $data = [
           'modal' => $viewModal,
@@ -182,15 +186,26 @@ class StocksController extends Controller
       }
       public function updateStock(Request $request) {
 
-        $update = Stocks::where('lotno', $request->batchNo)
+        $validated = $request->validate([
+          'id' => 'required|integer',
+          'batchNo' => 'required|string|max:255',
+          'itemname' => 'required|string|max:255',
+          'quantity' => 'required|integer|min:0',
+          'measure' => 'required|string|max:255',
+          'expirationdate' => 'required|date',
+        ]);
+
+        Stocks::where('id', $validated['id'])
+          ->where('campus', session('campus'))
+          ->whereNull('deleted_at')
+          ->firstOrFail()
           ->update([
-            'lotno' => $request->batchNo,
-            'item_name' => $request->itemname,
-            'total_stock' => $request->quantity,
-            'item_quantity' => $request->quantity,
-            'measurement' => $request->measure,
-            'expiration_date' => $request->expirationdate,
-            'campus' => session('campus'),
+            'lotno' => $validated['batchNo'],
+            'item_name' => $validated['itemname'],
+            'total_stock' => $validated['quantity'],
+            'item_quantity' => $validated['quantity'],
+            'measurement' => $validated['measure'],
+            'expiration_date' => $validated['expirationdate'],
             'updated_at' => Carbon::now('Asia/Manila')
           ]);
 

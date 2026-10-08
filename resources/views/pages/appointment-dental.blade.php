@@ -98,6 +98,27 @@
       margin:0
     }
 
+    .visit-reminder{
+      display:flex;
+      align-items:flex-start;
+      gap:12px;
+      margin-top:18px;
+      padding:14px 16px;
+      border:1px solid #f2d58a;
+      border-radius:12px;
+      background:#fff8e7;
+      color:#654b08;
+      font-size:14px;
+      line-height:1.55
+    }
+
+    .visit-reminder i{
+      flex:0 0 auto;
+      margin-top:3px;
+      color:#d49400;
+      font-size:18px
+    }
+
     .da-progress{
       display:grid;
       grid-template-columns:repeat(4,1fr);
@@ -1106,6 +1127,10 @@
       <main class="da-panel da-booking">
         <h1 class="da-title">Book an Appointment</h1>
         <p class="da-subtitle">Schedule your visit with SLSU clinic.</p>
+        <div class="visit-reminder" role="note" aria-label="Visit reminder">
+          <i class="fa fa-info-circle" aria-hidden="true"></i>
+          <div><strong>Reminder:</strong><br>Please bring your own <strong>face towel</strong> during your visit.<br>Thank you for your cooperation!</div>
+        </div>
         @if($leaveAnnouncements->isNotEmpty())
         <div class="leave-announcement" id="generalLeaveAnnouncement">
           <i class="fa fa-bullhorn"></i>
@@ -1163,7 +1188,6 @@
                       </span>
             
                       @unless($available)
-                      {{-- <hr> --}}
                         <span class="service-unavailable-notice" style="color:red"><b>Temporarily unavailable!</b></span>
                       @endunless
                     </span>

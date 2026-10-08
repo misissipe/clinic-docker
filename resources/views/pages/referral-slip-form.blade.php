@@ -9,18 +9,7 @@
     <link rel="shortcut icon" type="image/x-icon" href="{{asset('images/logo/slsu.ico')}}">
     <base href="https://clinic.southernleytestateu.edu.ph/">
   </head>
-<style>
-    @page {
-        size: A4 portrait;
-        margin: 0;
-    }
-
-    html, body {
-        width: 210mm;
-        min-height: 297mm;
-        box-sizing: border-box;
-    }
-
+  <style>
     @font-face {
     font-family: 'Aptos';
     src: url("file://{{ public_path('fonts/Aptos-Regular.ttf') }}") format('truetype');
@@ -60,11 +49,11 @@ body {
       height:100%;
     }
     div.slsu{
-      width:12%;
+      width:10%;
       font-size: 14px;
       float:right;
       margin-right: 160px;
-      height:88%;
+      height:86%;
       text-align:center;
     }
     img{
@@ -79,8 +68,8 @@ body {
       margin-left: 20%;
     }
     div.logo{
-      width: 320px;
-      height: 105%;
+      width: 300px;
+      height: 95%;
     }
     p{
         font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
@@ -90,11 +79,11 @@ body {
         page-break-inside: auto;
     }
     div.slsu{
-      width:12%;
+      width:10%;
       font-size: 14px;
       float:right;
       margin-right: 160px;
-      height:88%;
+      height:78%;
       text-align:center;
     }
     header {
@@ -114,56 +103,21 @@ body {
         font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
     }
     body {
-        margin-top: 4.1cm;
-        margin-left: 0.8cm;
-        margin-right: 0.8cm;
-        margin-bottom: 1.6cm;
+        margin-top: 4.5cm;
+        margin-left: 1cm;
+        margin-right: 1cm;
+        margin-bottom: 2cm; 
         font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
     }
     footer {
         position: fixed;
         bottom: 0cm;
-        left: 0.8cm;
-        right: 0.8cm;
-        height: 1.3cm;
+        left: 1cm;
+        right: 1cm;
+        height: 1.5cm;
         font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
     }
     tbody { vertical-align: top; }
-
-    main {
-        width: 100%;
-        max-width: 194mm;
-        overflow: hidden;
-    }
-
-    * {
-        box-sizing: border-box;
-    }
-
-    @media print {
-        html, body {
-            width: 210mm;
-            height: 297mm;
-        }
-
-        body {
-            margin: 41mm 8mm 16mm;
-            print-color-adjust: exact;
-            -webkit-print-color-adjust: exact;
-        }
-
-        main {
-            transform: scale(0.94);
-            transform-origin: top left;
-            width: 106.38%;
-        }
-
-        table, tr, td,
-        .form-group,
-        .upper {
-            page-break-inside: avoid;
-        }
-    }
    
   table, th,td{
   border: 1px solid rgb(58, 57, 57);
@@ -282,7 +236,7 @@ body {
         <div class="slsu">
           <img src="images/logo/bagong_pilipinas.png">
         </div><br><br><br><br><br>
-        <p style="font-size: 12px; text-decoration:underline; text-align:center;">Excellence | Service | Leadership and Good Governance | Innovation | Social Responsibility | Integrity | Professionalism | Spirituality</p>
+        <p style="font-size: 10px; text-decoration:underline; text-align:center;">Excellence | Service | Leadership and Good Governance | Innovation | Social Responsibility | Integrity | Professionalism | Spirituality</p>
         <p style="font-weight: 700; font-size: 16px; font-style: bold; text-align:center;font-family:'Aptos';">Referral Slip</p>
       </div>
     </header>
@@ -460,14 +414,14 @@ body {
       @php 
         $campus_code = session('campus');
       @endphp
-      @if($campus_code == 1)<img class="logo" src="images/logo/main-campus-logo.png" alt="" style="width:50%; height:auto; max-height: 50%; float: left; margin-left: 100px;">@endif
-      @if($campus_code == 2)<img class="logo" src="images/logo/maasin-logo.png" alt="" style="width:50%; height:auto; max-height: 50%; float: left; margin-left: 100px;">@endif
-      @if($campus_code == 3)<img class="logo" src="images/logo/tomas-oppus.png" alt="" style="width:50%; height:auto; max-height: 50%; float: left; margin-left: 100px;">@endif
-      @if($campus_code == 4)<img class="logo" src="images/logo/bontoc.png" alt="" style="width:50%; height:auto; max-height: 50%; float: left; margin-left: 100px;">@endif
-      @if($campus_code == 5)<img class="logo" src="images/logo/san-juan.png" alt="" style="width:50%; height:auto; max-height: 50% float: left; margin-left: 100px;">@endif
-      @if($campus_code == 6)<img class="logo" src="images/logo/hinunangan.png" alt="" style="width:50%; height:auto; max-height: 50%; float: left; margin-left: 100px;">@endif
-      <img src="images/logo/bagong_pilipinas.png" style="width: 85px; height: 85px; float:right; margin-right: 120px;">
-      <p style="font-size: 12px; text-decoration:underline; text-align:center;white-space: nowrap;">Excellence | Service | Leadership and Good Governance | Innovation | Social Responsibility | Integrity | Professionalism | Spirituality</p>
+      @if($campus_code == 1)<img class="logo" src="images/logo/main-campus-logo.png" alt="" style="width:40%; height:auto; max-height: 40%; float: left; margin-left: 100px;">@endif
+      @if($campus_code == 2)<img class="logo" src="images/logo/maasin-logo.png" alt="" style="width:40%; height:auto; max-height: 40%; float: left; margin-left: 100px;">@endif
+      @if($campus_code == 3)<img class="logo" src="images/logo/tomas-oppus.png" alt="" style="width:40%; height:auto; max-height: 40%; float: left; margin-left: 100px;">@endif
+      @if($campus_code == 4)<img class="logo" src="images/logo/bontoc.png" alt="" style="width:40%; height:auto; max-height: 40%; float: left; margin-left: 100px;">@endif
+      @if($campus_code == 5)<img class="logo" src="images/logo/san-juan.png" alt="" style="width:40%; height:auto; max-height: 40% float: left; margin-left: 100px;">@endif
+      @if($campus_code == 6)<img class="logo" src="images/logo/hinunangan.png" alt="" style="width:40%; height:auto; max-height: 40%; float: left; margin-left: 100px;">@endif
+      <img src="images/logo/bagong_pilipinas.png" style="width: 75px; height: 75px; float:right; margin-right: 120px;">
+      <p style="font-size: 10px; text-decoration:underline; text-align:center;white-space: nowrap;">Excellence | Service | Leadership and Good Governance | Innovation | Social Responsibility | Integrity | Professionalism | Spirituality</p>
       <p style="font-weight: 700; font-size: 14px; font-style: bold; text-align:center;margin: 0; padding: 0;">Return Slip</p>
     </div>
     <div class="upper" style="font-size: 12px;">
@@ -527,7 +481,7 @@ body {
     <div class="d-flex justify-content-left" style=" font-size: 14px; font-style: bold; color:black;">Action taken/Remarks:</div>
       <table class="table" style="color:black;font-size:12px">
         <tr>
-          <td class="a" height="80px"><br><br><br><br><br><br><br>
+          <td class="a" height="50px"><br><br><br><br><br><br>
             <span style="font-weight: bold; font-size: 12px; color: black; display: inline-block; width: 30%; text-align: center; padding-top: 2px; border-top: 1px solid black;margin-right:10px">
               Signature Over Printed Name
            </span>

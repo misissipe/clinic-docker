@@ -339,47 +339,64 @@ $("#saveBtn").prop("disabled", true);
 })
 
 //
-$(document).on('click', '.viewbutton', function() {
+$(document).on('click', '.viewbutton', function(event) {
+    event.preventDefault();
     var id = $(this).data('id');
+    var editModal = $('#updateStock');
 
     $.ajax({
         type: 'POST',
         url: '/viewModalStock',
         data: { id: id },
         success: function(response) {
-            $('#updateStock').modal('show');
- function ucwords(str) {
+          if (!response.modal) {
+            Swal.fire('Unable to Edit', 'The selected stock record could not be found.', 'error');
+            return;
+          }
+
+          function ucwords(str) {
             return str.replace(/\b\w/g, function(char) {
                 return char.toUpperCase();
             });
-        }
+          }
 
             var modal = response.modal;
-            var id = modal.id;
-            var lotno = modal.lotno;
-            var item_name = ucwords(modal.item_name.toLowerCase());
-            var total_stock = modal.total_stock;
-            var measurement = modal.measurement;
-            var item_quantity = modal.item_quantity;
-            var expiration_date = modal.expiration_date;
-            var unit_of_measurement = response.measure;
+            var itemName = modal.item_name ? ucwords(modal.item_name.toLowerCase()) : '';
+            var measurements = response.measure || [];
+            var measureSelect = editModal.find('[name="measure"]');
 
-            $('#id').val(id);
-            $('#lotno').val(lotno);
-            $('#itemname1').val(item_name);
-            $('#quantity1').val(item_quantity);
-            $('#expirationdate1').val(expiration_date);
+            editModal.find('[name="id"]').val(modal.id);
+            editModal.find('[name="batchNo"]').val(modal.lotno || '');
+            editModal.find('[name="itemname"]').val(itemName);
+            editModal.find('[name="quantity"]').val(modal.item_quantity ?? 0);
+            editModal.find('[name="expirationdate"]').val((modal.expiration_date || '').substring(0, 10));
 
-            $('#measure1').empty();
-            $('#measure1').append('<option value="" disabled selected>Select Unit of Measure</option>');
+            measureSelect.empty();
+            measureSelect.append('<option value="" disabled>Select Unit of Measure</option>');
 
               
-            $.each(unit_of_measurement, function(index, value) {
+            $.each(measurements, function(index, value) {
                 let formattedText = ucwords(value.unit_of_measurement.toLowerCase());
-                $('#measure1').append('<option value="' + value.unit_of_measurement + '">' + formattedText + '</option>');
+                measureSelect.append($('<option>', {
+                  value: value.unit_of_measurement,
+                  text: formattedText
+                }));
             });
 
-            $('#measure1').val(measurement);
+            if (modal.measurement && !measureSelect.find('option').filter(function () {
+              return $(this).val() === modal.measurement;
+            }).length) {
+              measureSelect.append($('<option>', {
+                value: modal.measurement,
+                text: ucwords(modal.measurement.toLowerCase())
+              }));
+            }
+
+            measureSelect.val(modal.measurement || '');
+            editModal.modal('show');
+        },
+        error: function() {
+          Swal.fire('Unable to Edit', 'The stock details could not be loaded.', 'error');
         }
     });
 });

@@ -7,6 +7,7 @@
       "slug": "dashboard",
       "icon": "dashboard"
     },
+
     {
       "navheader": "Nurse"
     },
@@ -74,14 +75,6 @@
       "name": "Return Slip",
       "i18n": "User",
       "icon": "upload"
-    },
-    {
-      "url": "patient-status",
-      "name": "Log-out",
-      "i18n": "User",
-      "icon": "box",
-      "badge": "statusCount",
-      "badgeClass": "bg-danger"
     },
     {
       "url": "medical-record-of-visit",
@@ -174,6 +167,12 @@
     
     {
       "navheader": "Attendant"
+    },
+    {
+      "url": "assessment-student",
+      "name": "Assessment",
+      "i18n": "User",
+      "icon": "pen"
     },
     {
       "url": "calendar-appointment",
@@ -324,6 +323,36 @@
       "i18n": "Medicine",
       "icon": "lab"
     },
+{
+      "navheader": "Authorization Setup"
+    },
+ {
+      "url": "add-new-user",
+      "name": "Clinic Accounts",
+      "i18n": "User",
+      "icon": "users"
+    },
+{
+      "url": "doctor-leaves",
+      "name": "Doctor Leave",
+      "i18n": "Users",
+      "icon": "calendar"
+    },
+    {
+      "url": "#",
+      "name": "Assignments",
+      "i18n": "User",
+      "icon": "gear",
+      "submenu":[
+      {
+         "url": "add-doctors",
+        "name": "Doctor"
+      },
+      {
+        "url": "add-signatories",
+        "name": "Signatories"
+      }]
+    },
     {
       "navheader": "Report"
     },
@@ -339,54 +368,6 @@
       {
         "url": "report-dental-services",
         "name": "Dental Services"
-      }]
-    } ,
-    {
-      "navheader": "Patient"
-    },
-{
-      "url": "search-student",
-      "name": "Information",
-      "i18n": "User",
-      "icon": "users",
-      "submenu":[
-      {
-         "url": "/search-student",
-      "name": "Student"
-      },
-      {
-        "url": "/search-employee",
-      "name": "Employee"
-      }]
-    },
-    {
-      "url": "doctor-leaves",
-      "name": "Doctor Leave",
-      "i18n": "Users",
-      "icon": "calendar"
-    },
-    {
-      "navheader": "Settings"
-    },
-    {
-      "url": "add-new-user",
-      "name": "Clinic Accounts",
-      "i18n": "User",
-      "icon": "users"
-    },
-    {
-      "url": "#",
-      "name": "Setting",
-      "i18n": "User",
-      "icon": "gear",
-      "submenu":[
-      {
-         "url": "add-doctors",
-        "name": "Doctor"
-      },
-      {
-        "url": "add-signatories",
-        "name": "Signatories"
       }]
     }
   ]

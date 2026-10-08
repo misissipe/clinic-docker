@@ -109,9 +109,9 @@
   <div class="rule"></div>
 
   <div class="doctor">
-    <div class="doctor-name" style="text-transform: uppercase">{{$doctor->FirstName}}{{$doctor->MiddleName}}{{$doctor->LastName}}</div>
-    <div class="doctor-title">Visiting Physician</div>
-    <div class="doctor-license">Lic. # {{ $doctor->license ?? '0162240' }}</div>
+    <div class="doctor-name" style="text-transform: uppercase">{{ trim(implode(' ', array_filter([$doctor->FirstName ?? null, $doctor->MiddleName ?? null, $doctor->LastName ?? null]))) }}</div>
+    <div class="doctor-title">Doctor in Charge · Visiting Physician</div>
+    <div class="doctor-license">Lic. # {{ $doctor->license ?? '—' }}</div>
   </div>
 
   <div class="patient-info">

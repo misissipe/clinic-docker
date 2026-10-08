@@ -173,6 +173,18 @@ Route::middleware(['authuser'])->group(function () {
     Route::post('/updatePersonalEmp','EmployeeController@updatePersonalEmp');
 });
 
+#Assessment Questionnaire
+    Route::get('/assessment-student','DentalRecordsController@indexAssessmentStudent');
+    Route::get('/assessment-employee','DentalRecordsController@indexAssessmentEmployee');
+    Route::get('/assessment-dependent','DentalRecordsController@indexAssessmentDependent');
+    Route::get('/assessment-questionnaire','DentalRecordsController@indexQuestionnaire');
+    Route::post('/assessment-questionnaire','DentalRecordsController@saveAssessment')->name('assessment.save');
+    Route::get('/assessment-records','DentalRecordsController@assessmentRecords')->name('assessment.records');
+    Route::post('/assessment-records/search','DentalRecordsController@searchAssessmentStudents')->name('assessment.records.search');
+    Route::get('/assessment-records/{studentNo}','DentalRecordsController@assessmentPatientRecords')->name('assessment.patient-records');
+    Route::put('/assessment-records/{studentNo}/{assessmentId}','DentalRecordsController@updateAssessmentRecord')->name('assessment.records.update');
+    Route::delete('/assessment-records/{studentNo}/{assessmentId}','DentalRecordsController@deleteAssessmentRecord')->name('assessment.records.delete');
+
 
 #Appointment
 Route::middleware(['authuser'])->group(function () {
@@ -184,6 +196,7 @@ Route::middleware(['authuser'])->group(function () {
     Route::post('/setAppointment','appointmentController@create');
     Route::get('/view-appointment','DashboardController@dashboardEcommerce');
     Route::post('/setStatus','appointmentController@ResultStatus');
+    Route::post('/appointment/update-services','appointmentController@updateServices')->name('appointment.update-services');
     Route::post('/cancelStatus','appointmentController@cancelStatus');
     Route::get('/view-status-appointment','appointmentController@status');
     Route::post('/reschedule','appointmentController@reschedule');

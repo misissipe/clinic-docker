@@ -130,6 +130,16 @@
   padding: 18px;
 }
 
+.consultation-datetime {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+@media (max-width: 575px) {
+  .consultation-datetime { grid-template-columns: 1fr; }
+}
+
 .field-label {
   display: block;
   margin-bottom: 6px;

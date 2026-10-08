@@ -3,6 +3,85 @@
      {
          background-color: rgb(110, 155, 222);
      }
+    .prescribed-medicine-list {
+        display: grid;
+        gap: 10px;
+    }
+    .medicine-section-title {
+        display: block;
+        margin: 0 0 10px;
+        color: #415c7d;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+    .prescribed-medicine-item {
+        padding: 12px;
+        border: 1px solid #dbe3ed;
+        border-radius: 8px;
+        background: #f8fafd;
+    }
+    .prescribed-medicine-item strong {
+        display: block;
+        color: #203c65;
+    }
+    .prescribed-medicine-details,
+    .prescribed-medicine-instruction {
+        margin-top: 4px;
+        color: #65758d;
+        font-size: 13px;
+    }
+    .prescribed-medicine-empty {
+        padding: 14px;
+        color: #738196;
+        text-align: center;
+        border: 1px dashed #cad6e6;
+        border-radius: 8px;
+    }
+    .otc-medicine-editor {
+        display: none;
+        margin-bottom: 14px;
+        padding: 14px;
+        border: 1px solid #dbe3ed;
+        border-radius: 8px;
+        background: #f8fafd;
+    }
+    .otc-medicine-row {
+        position: relative;
+        display: grid;
+        grid-template-columns: 120px minmax(0, 1fr) auto;
+        gap: 10px;
+        align-items: end;
+        margin-bottom: 10px;
+    }
+    .otc-medicine-row:focus-within { z-index: 20; }
+    .otc-medicine-name-field { position: relative; }
+    .otc-medicine-results {
+        display: none;
+        position: absolute;
+        z-index: 1070;
+        top: 100%;
+        right: 0;
+        left: 0;
+        max-height: 220px;
+        overflow-y: auto;
+        border: 1px solid #cad6e6;
+        border-radius: 0 0 8px 8px;
+        background: #fff;
+        box-shadow: 0 8px 20px rgba(27, 52, 86, .15);
+    }
+    .otc-medicine-result,
+    .otc-medicine-result-empty {
+        padding: 10px 12px;
+        border-bottom: 1px solid #edf1f6;
+    }
+    .otc-medicine-result { cursor: pointer; }
+    .otc-medicine-result:hover { background: #eef4ff; }
+    .otc-medicine-result strong,
+    .otc-medicine-result small { display: block; }
+    .otc-medicine-result small { color: #738196; }
+    @media (max-width: 576px) {
+        .otc-medicine-row { grid-template-columns: 1fr; }
+    }
 </style>
 
 <div id="viewMedicalRecord" class="modal fade">
@@ -134,23 +213,18 @@
                         <textarea class="form-control " name="recommendation" value="{{ old('recommendation') }}"  id="viewRecommendation" rows="5"></textarea>
                 </div>
                 <br>
-            <div class="form-outline" id="medicineOTC">
-             <button class="btn btn-success" id="addNewinput" type="button">Add</button><br>
-              <label class="form-label" style="display: inline-block;" for="textAreaExample">Medicine:<span class="text-danger">*</span></label>
-              <div id="inputs-container">
-                <div class="input-group">
-                  <input type="number" class="form-control col-sm-1" style="display: inline-block;" name="OTCmedpcs[]" aria-describedby="" placeholder="pcs." autocomplete="off">
-                  <input type="text" class="form-control col-sm-6 OTCmedDescript" style="display: inline-block;" name="OTCmedDescript[]" aria-describedby="" placeholder="description" autocomplete="off">
-                  <input type="hidden" class="form-control col-sm-6 idOTCMed" style="display: inline-block;" name="idOTCMed[]" autocomplete="off">
-                  <input type="hidden" class="form-control col-sm-6 lotOTCMed" style="display: inline-block;" name="lotOTCMed[]" autocomplete="off">
-                  <span class="text-danger stockWarning" style="display: none;"> Low stock! </span>
-                  <span class="text-info stockLeft" style="display: inline-block; margin-left: 10px;"></span>&emsp;
-                  <span class="text-danger expirationWarning" style="display:none;"></span>
-                  {{-- <button class="btn btn-default remove-input" type="button"><i class="fa fa-close" style="display: inline-block;font-size:20px;color:red"></i></button> --}}
-                  <br><br>
-                </div>
-              </div>  
-               
+            <div class="form-outline" id="prescribedMedicineSection">
+              <div id="otcMedicineEditor" class="otc-medicine-editor">
+                <span class="medicine-section-title">Medicine Given at New Medical Record</span>
+                <div id="otcMedicineRows"></div>
+                <button type="button" id="addOtcMedicine" class="btn btn-outline-primary btn-sm">
+                  <i class="fa fa-plus"></i> Add Medicine
+                </button>
+              </div>
+              <span class="medicine-section-title">Doctor-Prescribed Medicine</span>
+              <div id="prescribed-medicine-list" class="prescribed-medicine-list">
+                <div class="prescribed-medicine-empty">No doctor-prescribed medicine for this consultation.</div>
+              </div>
             </div>
             </div>
           
@@ -163,3 +237,21 @@
         </div> 
     </div> 
 </div>
+
+<template id="otcMedicineRowTemplate">
+  <div class="otc-medicine-row">
+    <div>
+      <label class="form-label">Quantity</label>
+      <input type="number" min="1" name="OTCmedpcs[]" class="form-control otc-medicine-quantity" placeholder="Pcs.">
+    </div>
+    <div class="otc-medicine-name-field">
+      <label class="form-label">Medicine</label>
+      <input type="text" name="OTCmedDescript[]" class="form-control otc-medicine-name" placeholder="Medicine name" autocomplete="off">
+      <input type="hidden" name="idOTCMed[]" class="otc-medicine-stock-id">
+      <div class="otc-medicine-results"></div>
+    </div>
+    <button type="button" class="btn btn-outline-danger remove-otc-medicine" aria-label="Remove medicine">
+      <i class="fa fa-trash"></i>
+    </button>
+  </div>
+</template>

@@ -67,6 +67,11 @@ class AuthenticationController extends Controller
       session()->flush();
       return redirect('/login');
   }
+
+  public function fullLogout(){
+      session()->flush();
+      return redirect('/login');
+  }
   
   public function loginPage()
   {
@@ -86,11 +91,13 @@ class AuthenticationController extends Controller
   
   public function handleGoogleCallback($retry=0)
   {
-    try {
+  
+    try { 
       $user = Socialite::driver('google')->user(); 
+ 
       if($user){
         $email = $user->email;
-
+       
         //  dd($findemployee);  
         // $login = Http::post(env('APP_API'). "/api/loginbygoogle",['email' => $email])->json();
        
@@ -98,13 +105,25 @@ class AuthenticationController extends Controller
         if(!empty($findemployee)){
           if($findemployee){
             
-            $found = DB::connection('mysql')->table('account')->where('employee_id',$findemployee->id)->first();
+            $accounts = DB::connection('mysql')->table('account')
+              ->where(function ($query) use ($findemployee, $email) {
+                $query->whereRaw('LOWER(TRIM(email)) = ?', [strtolower(trim($email))])
+                  ->orWhere('employee_id', $findemployee->id);
 
-            $admin = 'cperioles@southernleytestateu.edu.ph';
+                if (!empty($findemployee->AgencyNumber)) {
+                  $query->orWhere('employee_id', $findemployee->AgencyNumber);
+                }
+              })
+              ->whereNull('deleted_at')
+              ->get();
+            $found = $accounts->first();
+            $administratorAccount = $accounts->first(function ($account) {
+              return in_array('Admin', RoleController::accountRoles($account->role), true);
+            });
+            // $guest = 'jroa@southernleytestateu.edu.ph';
 
             if ($found) {
-              if($found->email === $admin ){
-
+              if($administratorAccount){
                 session([
                   'employee_id' => $findemployee->id,  
                   'name' => $findemployee->FirstName." ".$findemployee->MiddleName." ".$findemployee->LastName,
@@ -115,9 +134,23 @@ class AuthenticationController extends Controller
                   'role' => 'Admin',
                   'campus' => 1,
                 ]);
-              }else{
+              }
+              // elseif($found->email === $guest ){
+              //   session([
+              //     'employee_id' => $findemployee->id,  
+              //     'name' => $findemployee->FirstName." ".$findemployee->MiddleName." ".$findemployee->LastName,
+              //     'firstname' => $findemployee->FirstName,
+              //     'lastname' =>$findemployee->LastName,
+              //     'department_id' => $findemployee->Department,
+              //     'photo' => $findemployee->profilephoto,
+              //     'role' => 'Guest',
+              //     'campus' => 7,
+              //   ]);
+              // }
+              else{ 
+                $db = $accounts->firstWhere('email', $email) ?: $found;
 
-                $db = DB::connection('mysql')->table('account')->where('email',$email)->first();
+                //  dd($db);
 
                 session([
                   'employee_id' => $findemployee->id,
@@ -127,41 +160,47 @@ class AuthenticationController extends Controller
                   'department_id' => $findemployee->Department,
                   'photo' => $findemployee->profilephoto,
                   'role' => $db ->role,
-                  'campus' => $findemployee->Campus,
+                  'campus' => $db->campus,
                 ]);
               }
-    
-            }  else {
-              $role = "Employee";
-              $user = DB::connection('mysql')
-                ->table('account')
-                ->insert([
-                  'employee_id' =>$findemployee->id,
-                  'firstname' =>$findemployee->FirstName,
-                  'middlename' =>$findemployee->MiddleName,
-                  'lastname' =>$findemployee->LastName,
-                  'email' =>$email,
-                  'role' =>$role,
-                  'campus' =>$findemployee->Campus,
-                  'created_at' => Carbon::today('Asia/Manila')
-                ]);
 
+              $today = Carbon::today('Asia/Manila');
+              $workspaces = RoleController::assignedWorkspaces($accounts, $today);
+
+              if ($administratorAccount) {
+                $workspaces = RoleController::administratorWorkspaces($administratorAccount->campus);
+              }
+
+              if (!empty($workspaces)) {
+                session(['available_workspaces' => $workspaces]);
+                session()->forget('role');
+
+                return redirect()->route('workspace.choose');
+              }
+
+              session()->forget(['available_workspaces', 'role', 'campus']);
+
+              return redirect('/login')->withErrors([
+                'access' => 'No active clinic workspace is available. Please check the account role and access dates.',
+              ]);
             }
-            return redirect('/');
+            return redirect('/login')->withErrors([
+              'access' => 'No active clinic account was found.',
+            ]);
           }
-        }
+        }   
         $pageConfigs = ['bodyCustomClass' => 'bg-full-screen-image'];
         return view('pages.auth-login', ['pageConfigs' => $pageConfigs]);
 
       }
     } catch (\Throwable $th) {
+      report($th);
 
-     if($retry>0){
-      return handleGoogleCallback($retry+1);
-     }
-      dd('error',$th);
+      session()->forget(['available_workspaces', 'role', 'campus']);
+
+      return redirect('/login')->withErrors([
+        'access' => 'Sign-in could not prepare your clinic workspaces. Please try again.',
+      ]);
     }
   }
-
-
 }

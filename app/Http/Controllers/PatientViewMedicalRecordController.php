@@ -19,6 +19,7 @@ use App\Providers;
 use Carbon\Carbon;
 use Haruncpi\LaravelIdGenerator\IdGenerator;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Validation\ValidationException;
 
 class PatientViewMedicalRecordController extends Controller
 {
@@ -253,9 +254,25 @@ class PatientViewMedicalRecordController extends Controller
             ->where('m.campus',session('campus'))
             ->first();
 
+            $prescribedMedicines = DB::table('doctor_consultation')
+                ->where('patientId', $data->id)
+                ->whereNull('deleted_at')
+                ->orderBy('id')
+                ->get([
+                    'medicine_name',
+                    'quantity',
+                    'dose',
+                    'route',
+                    'frequency',
+                    'duration',
+                    'when_to_take',
+                    'instruction',
+                ]);
+
             $newData = [
                 'viewModal' =>$data,
-                'role' => $role
+                'role' => $role,
+                'prescribedMedicines' => $prescribedMedicines,
             ];
         return response()->json($newData);
     }
@@ -273,15 +290,42 @@ class PatientViewMedicalRecordController extends Controller
 
     public function updateViewModal(Request $request)
     {
+        $request->validate([
+            'OTCmedpcs' => 'nullable|array',
+            'OTCmedpcs.*' => 'nullable|integer|min:1',
+            'OTCmedDescript' => 'nullable|array',
+            'OTCmedDescript.*' => 'nullable|string|max:255',
+            'idOTCMed' => 'nullable|array',
+            'idOTCMed.*' => 'nullable|integer',
+        ]);
+
         $medical = Medical::where('id', $request->id)
             ->where('campus', session('campus'))
             ->firstOrFail();
 
+        $medicineDescriptions = [];
+        $medicineQuantities = [];
+        $medicineStockIds = [];
+        foreach ($request->input('OTCmedDescript', []) as $index => $description) {
+            $description = trim((string) $description);
+            if ($description === '') continue;
+
+            $medicineDescriptions[] = $description;
+            $medicineQuantities[] = (int) ($request->input("OTCmedpcs.$index") ?: 1);
+            $medicineStockIds[] = $request->input("idOTCMed.$index");
+        }
+
         $oldDate = $medical->date;
         $oldDescriptions = json_decode($medical->OTCmedDescript, true) ?: [];
-        $oldPieces = json_decode($medical->OTCmedpcs, true) ?: [];
+        $oldQuantities = json_decode($medical->OTCmedpcs, true) ?: [];
 
-        DB::transaction(function () use ($request, $medical, $oldDate, $oldDescriptions, $oldPieces) {
+        $request->merge([
+            'OTCmedDescript' => $medicineDescriptions,
+            'OTCmedpcs' => $medicineQuantities,
+            'idOTCMed' => $medicineStockIds,
+        ]);
+
+        DB::transaction(function () use ($request, $medical, $medicineDescriptions, $medicineQuantities, $medicineStockIds, $oldDate, $oldDescriptions, $oldQuantities) {
             Medical::where('id', $medical->id)
                 ->where('campus', session('campus'))
                 ->update([
@@ -296,17 +340,101 @@ class PatientViewMedicalRecordController extends Controller
                     'pulse' => $request->pulse,
                     'res_rate' => $request->respiratoryRate,
                     'bp' => $request->bloodPressure,
+                    'OTCmedDescript' => json_encode($medicineDescriptions),
+                    'OTCmedpcs' => json_encode($medicineQuantities),
                     'remarks' => $request->remarks,
                     'specify' => $request->specify,
                     'status' => $request->status,
                     'reqlabres' => $request->reqlabres,
                     'recommendation' => $request->recommendation,
-                    'OTCmedpcs' => json_encode($request->OTCmedpcs),
-                    'OTCmedDescript' => json_encode($request->OTCmedDescript),
                     'updated_at' => Carbon::now('Asia/Manila')
                 ]);
 
-            $this->syncMedicalInventory($request, $medical, $oldDate, $oldDescriptions, $oldPieces);
+            $this->syncMedicalInventory($request, $medical, $oldDate, $oldDescriptions, $oldQuantities);
+
+            foreach ($medicineDescriptions as $index => $description) {
+                $oldIndex = array_search($description, $oldDescriptions, true);
+                $hasInventoryDeduction = $oldIndex !== false && DB::table('inventory as i')
+                    ->join('stock as s', 's.id', '=', 'i.stockId')
+                    ->where('i.patientId', $medical->patientId)
+                    ->where('i.campus', session('campus'))
+                    ->where('s.campus', session('campus'))
+                    ->where('s.item_name', $description)
+                    ->whereDate('i.date', $oldDate)
+                    ->whereNull('i.deleted_at')
+                    ->exists();
+
+                if ($hasInventoryDeduction) continue;
+
+                $stockId = $medicineStockIds[$index] ?? null;
+                if (!$stockId) {
+                    $stockId = Stocks::where('item_name', $description)
+                        ->where('campus', session('campus'))
+                        ->where('item_quantity', '>', 0)
+                        ->whereNull('deleted_at')
+                        ->where(function ($query) {
+                            $query->whereNull('expiration_date')
+                                ->orWhere('expiration_date', '>=', Carbon::today());
+                        })
+                        ->orderByRaw('expiration_date IS NULL, expiration_date ASC')
+                        ->value('id');
+                }
+
+                if (!$stockId) {
+                    throw ValidationException::withMessages([
+                        'OTCmedDescript' => "Please select {$description} from the medicine search results.",
+                    ]);
+                }
+
+                $stock = Stocks::where('id', $stockId)
+                    ->where('campus', session('campus'))
+                    ->whereNull('deleted_at')
+                    ->lockForUpdate()
+                    ->first();
+                $quantity = $medicineQuantities[$index];
+
+                if (!$stock) {
+                    throw ValidationException::withMessages([
+                        'OTCmedDescript' => "The selected inventory item for {$description} is unavailable.",
+                    ]);
+                }
+
+                $latestInventory = Inventory::where('stockId', $stock->id)
+                    ->where('campus', session('campus'))
+                    ->whereNull('deleted_at')
+                    ->orderByDesc('id')
+                    ->lockForUpdate()
+                    ->first();
+                $currentStock = $latestInventory ? (int) $latestInventory->remaining_stock : (int) $stock->item_quantity;
+
+                if ($currentStock < $quantity) {
+                    throw ValidationException::withMessages([
+                        'OTCmedpcs' => "Insufficient inventory for {$description}.",
+                    ]);
+                }
+
+                $remainingStock = $currentStock - $quantity;
+                $stock->update([
+                    'item_quantity' => $remainingStock,
+                    'updated_at' => Carbon::now('Asia/Manila'),
+                ]);
+
+                Inventory::insert([
+                    'added_by' => (new AESCipher)->decrypt(session('employee_id')),
+                    'patientId' => $medical->patientId,
+                    'stockId' => $stock->id,
+                    'lotno' => $stock->lotno,
+                    'campus' => session('campus'),
+                    'remaining_stock' => $remainingStock,
+                    'item_stock' => $currentStock,
+                    'stock_less' => $quantity,
+                    'added_stock' => 0,
+                    'date' => $request->date,
+                    'services' => 'Medical',
+                    'created_at' => Carbon::now('Asia/Manila'),
+                    'updated_at' => Carbon::now('Asia/Manila'),
+                ]);
+            }
         });
       
             return response()->json([
@@ -342,7 +470,36 @@ class PatientViewMedicalRecordController extends Controller
             ]);
 
             $this->recalculateInventoryFrom($inventory->id);
+
+            if ($newIndex === false) {
+                Inventory::where('id', $inventory->id)->update([
+                    'deleted_at' => Carbon::now('Asia/Manila'),
+                    'updated_at' => Carbon::now('Asia/Manila'),
+                ]);
+            }
         }
+
+        $staleInventoryIds = DB::table('inventory as i')
+            ->join('stock as s', 's.id', '=', 'i.stockId')
+            ->where('i.patientId', $medical->patientId)
+            ->where('i.campus', session('campus'))
+            ->where('i.services', 'Medical')
+            ->where('i.stock_less', 0)
+            ->where('i.added_stock', 0)
+            ->whereNull('i.deleted_at')
+            ->where(function ($query) use ($oldDate, $request) {
+                $query->whereDate('i.date', $oldDate)
+                    ->orWhereDate('i.date', $request->date);
+            });
+
+        if (!empty($newDescriptions)) {
+            $staleInventoryIds->whereNotIn('s.item_name', $newDescriptions);
+        }
+
+        Inventory::whereIn('id', $staleInventoryIds->pluck('i.id'))->update([
+            'deleted_at' => Carbon::now('Asia/Manila'),
+            'updated_at' => Carbon::now('Asia/Manila'),
+        ]);
     }
 
     private function findMedicalInventoryRowByMedicine($patientId, $medicineName, $date, $stockLess)

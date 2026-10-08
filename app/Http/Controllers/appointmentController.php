@@ -458,7 +458,13 @@ class appointmentController extends Controller
             ->where('id', '!=', $request->id)
             ->where('date', $request->date)
             ->where('time', $request->time)
-            ->where('status', '!=', 'Cancelled')
+            ->whereIn(DB::raw('LOWER(TRIM(status))'), [
+                'pending',
+                'for approval',
+                'approved',
+                'confirmed',
+                'rescheduled',
+            ])
             ->where('campus', session('campus'))
             ->whereNull('deleted_at')
             ->exists();
@@ -524,7 +530,13 @@ class appointmentController extends Controller
             ->where('id', '!=', $appointment->id)
             ->where('date', $appointment->original_date)
             ->where('time', $appointment->original_time)
-            ->where('status', '!=', 'Cancelled')
+            ->whereIn(DB::raw('LOWER(TRIM(status))'), [
+                'pending',
+                'for approval',
+                'approved',
+                'confirmed',
+                'rescheduled',
+            ])
             ->where('campus', session('campus'))
             ->whereNull('deleted_at')
             ->exists();
@@ -562,15 +574,26 @@ class appointmentController extends Controller
     }
     public function create(Request $request){
 
-        $existingAppointment = DB::table('appointment')
+        $blockingAppointment = DB::table('appointment')
             ->where('date', $request->date)
             ->where('time', $request->time)
-            ->where('status', '!=', 'Cancelled')
+            ->whereIn(DB::raw('LOWER(TRIM(status))'), [
+                'pending',
+                'for approval',
+                'approved',
+                'confirmed',
+                'rescheduled',
+            ])
             ->where('campus',session('campus'))
-            ->exists();
+            ->whereNull('deleted_at')
+            ->first(['id', 'status']);
 
-        if ($existingAppointment){
-            return response()->json(['status' => 400,'error' => 'The requested date and time slot is already occupied.']);
+        if ($blockingAppointment){
+            return response()->json([
+                'status' => 400,
+                'error' => 'The requested date and time slot is occupied by an active '
+                    . $blockingAppointment->status . ' appointment.',
+            ]);
         }else{
             DB::table('appointment')
             ->insert([
@@ -710,6 +733,49 @@ class appointmentController extends Controller
             ], 422);
 
      }
+
+    public function updateServices(Request $request)
+    {
+        $allowedServices = [
+            'Consultation',
+            'Oral Restoration',
+            'Oral Prophylaxis',
+            'Tooth Extraction',
+        ];
+
+        $request->validate([
+            'id' => 'required|integer|exists:appointment,id',
+            'services' => 'required|array|min:1',
+            'services.*' => 'required|string|distinct|in:' . implode(',', $allowedServices),
+        ]);
+
+        $appointment = DB::table('appointment')
+            ->where('id', $request->id)
+            ->where('campus', session('campus'))
+            ->whereNull('deleted_at')
+            ->first();
+
+        if (!$appointment) {
+            return response()->json(['error' => 'Appointment not found.'], 404);
+        }
+
+        if ($appointment->status !== 'Approved') {
+            return response()->json([
+                'error' => 'Services can only be edited for approved appointments.',
+            ], 422);
+        }
+
+        DB::table('appointment')
+            ->where('id', $appointment->id)
+            ->where('campus', session('campus'))
+            ->where('status', 'Approved')
+            ->update(['purpose' => json_encode(array_values($request->services))]);
+
+        return response()->json([
+            'success' => 'Appointment services updated successfully.',
+        ]);
+    }
+
     public function indexCalendarAppointment(){
         $this->autoCancelPastAppointments();
 

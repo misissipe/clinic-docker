@@ -80,7 +80,7 @@
       "icon": "upload"
     },
     {
-      "url": "medical-record-of-visit",
+      "url": "#",
       "name": "Log Book",
       "i18n": "User",
       "icon": "grid",

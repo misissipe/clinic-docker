@@ -91,7 +91,7 @@ use App\Http\Controllers\AESCipher;
 <section id="basic-datatable">
   <div class="row">
     @if (isset($record))
-    @if ($dentalchart === null)
+    @if ($details === null)
     <div class="" style="width: 100%" >
       <div class="card border"  style="margin-bottom: 20px;">
         <div class="card-body" style="" >
@@ -473,7 +473,7 @@ use App\Http\Controllers\AESCipher;
         </form>
       </div>
     </div>
-    @elseif($dentalchart !== null) 
+    @elseif($details !== null) 
     <div class="" style="width: 100%" >
       <div class="card border"  style="margin-bottom: 20px;">
         <div class="card-body" style="" >
@@ -961,7 +961,7 @@ $("#saveRecord").submit(function(e) {
         }).then((response2) => {
           if (response2.isConfirmed) {
             console.log(response.newId);
-            window.location.href = "/dental-treatment-record?id=" + encodeURIComponent(response.newId);
+            window.location.href = "/dental-treatment-record?id=" + encodeURIComponent(response.newId) + "&role=Employee";
           }
         });
         console.log(response);

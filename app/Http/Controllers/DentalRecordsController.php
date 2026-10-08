@@ -133,6 +133,7 @@ class DentalRecordsController extends Controller
                 ->whereMonth('date', '=', $monthIndex)
                 ->where('campus', session('campus'))
                 ->select(DB::raw('SUM(JSON_LENGTH(remarks)) as total'))
+                 ->whereNull('deleted_at')
                 ->value('total') ?? 0;
     
             $employeeCount[] = DB::connection('mysql')->table('treatmentrecord')
@@ -141,6 +142,7 @@ class DentalRecordsController extends Controller
                 ->whereMonth('date', $monthIndex)
                 ->where('campus', session('campus'))
                  ->select(DB::raw('SUM(JSON_LENGTH(remarks)) as total'))
+                  ->whereNull('deleted_at')
                  ->value('total') ?? 0;
     
             $dependentCount[] = DB::connection('mysql')->table('treatmentrecord')
@@ -149,6 +151,7 @@ class DentalRecordsController extends Controller
                 ->whereMonth('date', $monthIndex)
                 ->where('campus', session('campus'))
                  ->select(DB::raw('SUM(JSON_LENGTH(remarks)) as total'))
+                  ->whereNull('deleted_at')
                 ->value('total') ?? 0;
     
             $totalCount[] = DB::connection('mysql')->table('treatmentrecord')
@@ -156,6 +159,7 @@ class DentalRecordsController extends Controller
                 ->whereMonth('date', $monthIndex)
                 ->where('campus', session('campus'))
                 ->select(DB::raw('SUM(JSON_LENGTH(remarks)) as total'))
+                 ->whereNull('deleted_at')
                 ->value('total') ?? 0;
         }
     
@@ -207,7 +211,7 @@ class DentalRecordsController extends Controller
             $search = $request->input('search');
             $role = $request->get('role');
             
-            $result = DB::table('dentalchart')
+            $result = DB::table('dependent')
                 ->where('role',$role)
                 ->where(function ($query) use ($request) {
                     $query->where('id', 'like', '%' . $request->search . '%')
@@ -281,8 +285,6 @@ class DentalRecordsController extends Controller
                  ->where('role',$role)
                 ->first();
         
-
-               
         $view = DB::table('treatmentrecord as t')
             ->select('t.*')
             ->addSelect([
@@ -398,7 +400,7 @@ class DentalRecordsController extends Controller
           ];
 
 
-        return view('pages.assessment-student',['pageConfigs'=>$pageConfigs,'breadcrumbs'=>$breadcrumbs],compact('appointments'));
+        return view('pages.assessment-student',['pageConfigs'=>$pageConfigs,'breadcrumbs'=>$breadcrumbs]);
     }
     public function searchStudent(Request $request){ 
         $connection = MedClientAddController::getCampusConnection();
@@ -486,4 +488,215 @@ class DentalRecordsController extends Controller
           
         return view('pages.assessment-questionnaire',compact('data','age','gender','role'),['pageConfigs'=>$pageConfigs,'breadcrumbs'=>$breadcrumbs],compact('appointments'));
     }
+
+public function saveAssessment(Request $request)
+{
+    $request->validate([
+        'risk_factors' => 'required|array|min:1',
+        'risk_factors.*' => 'string',
+    ]);
+
+    $data = DB::table('assessment')->insert([
+        'patientId' => $request->patientId,
+        'risk_factors' => json_encode($request->risk_factors),
+        'risk_others' => $request->risk_other,
+        'others' => $request->others,
+        'temp' => $request->temp,
+        'bp' => $request->bp,
+        'pulse_rate' => $request->pulse_rate,
+        'service_availed' => $request->service_availed,
+        'campus' => $request->session()->get('campus'),
+        'created_at' => Carbon::now('Asia/Manila'),
+        'added_by' => $this->aes->decrypt(session('employee_id'))
+    ]);
+
+    return response()->json([
+        'status' => 200,
+        'success' => 'Assessment saved successfully!'
+    ]);
+}
+
+public function assessmentRecords()
+{
+    $pageConfigs = ['pageHeader' => true];
+    $breadcrumbs = [
+        ['link' => '/', 'name' => 'Home'],
+        ['name' => 'Assessment Record'],
+    ];
+
+    $patients = DB::connection('mysql')->table('assessment as a')
+        ->join('student_info as s', function ($join) {
+            $join->on(
+                DB::raw('a.patientId COLLATE utf8mb4_general_ci'),
+                '=',
+                DB::raw('s.StudentNo COLLATE utf8mb4_general_ci')
+            );
+        })
+        ->select(
+            'a.patientId',
+            's.FirstName as student_first_name',
+            's.MiddleName as student_middle_name',
+            's.LastName as student_last_name',
+            DB::raw('COUNT(a.patientId) as assessment_count'),
+            DB::raw('MAX(a.created_at) as latest_assessment')
+        )
+        ->where('a.campus', session('campus'))
+        ->where('s.campus', session('campus'))
+        ->groupBy(
+            'a.patientId',
+            's.FirstName',
+            's.MiddleName',
+            's.LastName'
+        )
+        ->orderBy('latest_assessment', 'desc')
+        ->get();
+
+    return view('pages.assessment-records', compact('patients', 'pageConfigs', 'breadcrumbs'));
+}
+
+public function searchAssessmentStudents(Request $request)
+{
+    $request->validate([
+        'search' => 'required|string|max:100',
+    ]);
+
+    $search = trim($request->search);
+
+    $patients = DB::connection('mysql')->table('assessment as a')
+        ->join('student_info as s', function ($join) {
+            $join->on(
+                DB::raw('a.patientId COLLATE utf8mb4_general_ci'),
+                '=',
+                DB::raw('s.StudentNo COLLATE utf8mb4_general_ci')
+            );
+        })
+        ->select(
+            'a.patientId',
+            's.FirstName as student_first_name',
+            's.MiddleName as student_middle_name',
+            's.LastName as student_last_name',
+            DB::raw('COUNT(a.patientId) as assessment_count'),
+            DB::raw('MAX(a.created_at) as latest_assessment')
+        )
+        ->where('a.campus', session('campus'))
+        ->where('s.campus', session('campus'))
+        ->where(function ($query) use ($search) {
+            $query->where('s.StudentNo', 'like', '%' . $search . '%')
+                ->orWhere('s.LastName', 'like', '%' . $search . '%')
+                ->orWhere('s.FirstName', 'like', '%' . $search . '%')
+                ->orWhere('s.MiddleName', 'like', '%' . $search . '%');
+        })
+        ->groupBy(
+            'a.patientId',
+            's.FirstName',
+            's.MiddleName',
+            's.LastName'
+        )
+        ->orderBy('latest_assessment', 'desc')
+        ->get();
+
+    $patients->transform(function ($patient) {
+        $patient->record_url = route('assessment.patient-records', [
+            'studentNo' => $patient->patientId,
+        ]);
+
+        return $patient;
+    });
+
+    return response()->json($patients);
+}
+
+public function assessmentPatientRecords($studentNo)
+{
+    $pageConfigs = ['pageHeader' => true];
+    $breadcrumbs = [
+        ['link' => '/', 'name' => 'Home'],
+        ['link' => route('assessment.records'), 'name' => 'Assessment Record'],
+        ['name' => 'Student History'],
+    ];
+
+    $student = DB::connection('mysql')->table('student_info')
+        ->select('StudentNo', 'FirstName', 'MiddleName', 'LastName')
+        ->where('StudentNo', $studentNo)
+        ->where('campus', session('campus'))
+        ->first();
+
+    abort_unless($student, 404);
+
+    $student->student_name = trim(
+        $student->LastName . ', ' . $student->FirstName . ' ' . $student->MiddleName
+    );
+
+    $records = DB::connection('mysql')->table('assessment')
+        ->where('patientId', $studentNo)
+        ->where('campus', session('campus'))
+        ->orderBy('created_at', 'desc')
+        ->get();
+
+    $records->transform(function ($record) {
+        $record->risk_factors = json_decode($record->risk_factors ?: '[]', true) ?: [];
+
+        return $record;
+    });
+
+    return view('pages.assessment-patient-records', compact(
+        'student',
+        'records',
+        'pageConfigs',
+        'breadcrumbs'
+    ));
+}
+
+public function updateAssessmentRecord(Request $request, $studentNo, $assessmentId)
+{
+    $request->validate([
+        'risk_factors' => 'required|array|min:1',
+        'risk_factors.*' => 'required|string|max:100|distinct',
+        'temp' => 'nullable|string|max:50',
+        'bp' => 'nullable|string|max:50',
+        'pulse_rate' => 'nullable|string|max:50',
+        'service_availed' => 'nullable|string|max:255',
+        'risk_others' => 'nullable|string|max:255',
+        'others' => 'nullable|string|max:255',
+    ]);
+
+    $updated = DB::connection('mysql')->table('assessment')
+        ->where('id', $assessmentId)
+        ->where('patientId', $studentNo)
+        ->where('campus', session('campus'))
+        ->update([
+            'risk_factors' => json_encode(array_values($request->risk_factors)),
+            'temp' => $request->temp,
+            'bp' => $request->bp,
+            'pulse_rate' => $request->pulse_rate,
+            'service_availed' => $request->service_availed,
+            'risk_others' => $request->risk_others,
+            'others' => $request->others,
+        ]);
+
+    if (!$updated) {
+        $exists = DB::connection('mysql')->table('assessment')
+            ->where('id', $assessmentId)
+            ->where('patientId', $studentNo)
+            ->where('campus', session('campus'))
+            ->exists();
+
+        if (!$exists) return response()->json(['error' => 'Assessment record not found.'], 404);
+    }
+
+    return response()->json(['success' => 'Assessment record updated successfully.']);
+}
+
+public function deleteAssessmentRecord($studentNo, $assessmentId)
+{
+    $deleted = DB::connection('mysql')->table('assessment')
+        ->where('id', $assessmentId)
+        ->where('patientId', $studentNo)
+        ->where('campus', session('campus'))
+        ->delete();
+
+    if (!$deleted) return response()->json(['error' => 'Assessment record not found.'], 404);
+
+    return response()->json(['success' => 'Assessment record deleted successfully.']);
+}
 }

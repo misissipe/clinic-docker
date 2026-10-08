@@ -214,6 +214,126 @@
 <script>
 $.ajaxSetup({ headers : { 'X-CSRF-TOKEN' : $('meta[name="csrf-token"]').attr('content') }});
   var patientId = 0;
+
+  function medicalArray(value) {
+    if (Array.isArray(value)) return value;
+    if (!value) return [];
+
+    try {
+      var parsed = JSON.parse(value);
+      return Array.isArray(parsed) ? parsed : [parsed];
+    } catch (error) {
+      return [value];
+    }
+  }
+
+  function addOtcMedicineRow(quantity, medicine) {
+    var template = document.getElementById('otcMedicineRowTemplate');
+    var row = $(template.content.cloneNode(true));
+    row.find('.otc-medicine-quantity').val(quantity || '');
+    row.find('.otc-medicine-name').val(medicine || '');
+    $('#otcMedicineRows').append(row);
+  }
+
+  function loadOtcMedicines(record) {
+    var quantities = medicalArray(record.OTCmedpcs);
+    var medicines = medicalArray(record.OTCmedDescript);
+    var rowCount = Math.max(quantities.length, medicines.length);
+
+    $('#otcMedicineRows').empty();
+    for (var index = 0; index < rowCount; index++) {
+      addOtcMedicineRow(quantities[index], medicines[index]);
+    }
+
+    toggleOtcMedicineEditor();
+  }
+
+  function toggleOtcMedicineEditor() {
+    var isOtcSelected = $('#viewMedicalRecord #OM').is(':checked');
+    $('#otcMedicineEditor').toggle(isOtcSelected);
+
+    if (isOtcSelected && !$('#otcMedicineRows .otc-medicine-row').length) {
+      addOtcMedicineRow('', '');
+    }
+  }
+
+  $(document).on('change', '#viewMedicalRecord #OM', toggleOtcMedicineEditor);
+  $(document).on('click', '#addOtcMedicine', function () {
+    addOtcMedicineRow('', '');
+  });
+  $(document).on('click', '.remove-otc-medicine', function () {
+    $(this).closest('.otc-medicine-row').remove();
+    toggleOtcMedicineEditor();
+  });
+  $(document).on('input', '.otc-medicine-name', function () {
+    var input = $(this);
+    var field = input.closest('.otc-medicine-name-field');
+    var results = field.find('.otc-medicine-results');
+    var search = input.val().trim();
+    var previousTimer = input.data('search-timer');
+
+    field.find('.otc-medicine-stock-id').val('');
+    clearTimeout(previousTimer);
+
+    if (search.length < 2) {
+      results.hide().empty();
+      return;
+    }
+
+    results.html('<div class="otc-medicine-result-empty">Searching medicines...</div>').show();
+    input.data('search-timer', setTimeout(function () {
+      $.ajax({
+        url: '/searchItems',
+        method: 'POST',
+        dataType: 'json',
+        data: { OTCmedDescript: search },
+        success: function (items) {
+          results.empty().show();
+
+          if (!items.length) {
+            results.append('<div class="otc-medicine-result-empty">No available medicine found.</div>');
+            return;
+          }
+
+          $.each(items, function (index, item) {
+            var option = $('<div class="otc-medicine-result"></div>')
+              .data('id', item.id)
+              .data('name', item.item_name)
+              .data('stock', item.item_quantity);
+
+            $('<strong></strong>').text(item.item_name).appendTo(option);
+            $('<small></small>').text(
+              item.item_quantity + ' pcs available' +
+              (item.lotno ? ' · Lot ' + item.lotno : '') +
+              (item.expiration_date ? ' · Exp. ' + item.expiration_date : '')
+            ).appendTo(option);
+            results.append(option);
+          });
+        },
+        error: function () {
+          results.html('<div class="otc-medicine-result-empty">Unable to load medicines.</div>').show();
+        }
+      });
+    }, 250));
+  });
+  $(document).on('click', '.otc-medicine-result', function () {
+    var option = $(this);
+    var row = option.closest('.otc-medicine-row');
+    var stock = Number(option.data('stock'));
+
+    row.find('.otc-medicine-name').val(option.data('name'));
+    row.find('.otc-medicine-stock-id').val(option.data('id'));
+    row.find('.otc-medicine-quantity')
+      .attr('max', stock)
+      .attr('placeholder', 'Max ' + stock);
+    option.parent().hide();
+  });
+  $(document).on('click', function (event) {
+    if (!$(event.target).closest('.otc-medicine-name-field').length) {
+      $('.otc-medicine-results').hide();
+    }
+  });
+
   //Max date
   var today = new Date().toISOString().split('T')[0];
   document.getElementById('date').setAttribute('max', today);
@@ -243,6 +363,11 @@ $.ajaxSetup({ headers : { 'X-CSRF-TOKEN' : $('meta[name="csrf-token"]').attr('co
             }
           })
         }
+        },
+        error: function(xhr) {
+          var errors = xhr.responseJSON && xhr.responseJSON.errors;
+          var firstError = errors ? Object.values(errors)[0][0] : 'Unable to update the medical record.';
+          Swal.fire('Unable to update', firstError, 'error');
         }
     });
   });
@@ -358,133 +483,42 @@ $.ajaxSetup({ headers : { 'X-CSRF-TOKEN' : $('meta[name="csrf-token"]').attr('co
   
           }
 
-           $('#inputs-container').empty();
+            const prescribedMedicineList = $('#prescribed-medicine-list').empty();
+            const prescribedMedicines = response.prescribedMedicines || [];
 
-            const pcsList = JSON.parse(response.viewModal.OTCmedpcs || "[]");
-            const descriptions = JSON.parse(response.viewModal.OTCmedDescript || "[]");
-
-            if (Array.isArray(descriptions) && descriptions.length > 0) {
-              descriptions.forEach(function (desc, index) {
-                const pcs = pcsList[index] || '';
-
-                const newInput = `
-                  <div class="input-group mb-2">
-                    <input type="number" class="form-control col-sm-1" name="OTCmedpcs[]" value="${pcs}" placeholder="pcs." autocomplete="off">
-                    <input type="text" class="form-control col-sm-6 OTCmedDescript" name="OTCmedDescript[]" value="${desc}" placeholder="description" autocomplete="off" readonly>
-                    <input type="hidden" class="form-control col-sm-6 idOTCMed" name="idOTCMed[]" value="" readonly>
-                    <input type="hidden" class="form-control col-sm-6 lotOTCMed" name="lotOTCMed[]" value="" readonly >
-                    <span class="text-info stockLeft" style="display: inline-block; margin-left: 10px;"></span>
-                  </div>
-                `;
-                $('#inputs-container').append(newInput);
-              });
+            if (!prescribedMedicines.length) {
+              prescribedMedicineList.append(
+                $('<div>').addClass('prescribed-medicine-empty').text('No doctor-prescribed medicine for this consultation.')
+              );
             } else {
-              const emptyInput = `
-                <div class="input-group mb-2">
-                  <input type="number" class="form-control col-sm-1" name="OTCmedpcs[]" placeholder="pcs." autocomplete="off" readonly>
-                  <input type="text" class="form-control col-sm-6 OTCmedDescript" name="OTCmedDescript[]" placeholder="description" autocomplete="off" readonly>
-                  <input type="hidden" class="form-control col-sm-6 idOTCMed" name="idOTCMed[]" readonly>
-                  <input type="hidden" class="form-control col-sm-6 lotOTCMed" name="lotOTCMed[]" readonly>
-                </div>
-              `;
-              $('#inputs-container').append(emptyInput);
-            }
-            $("#addNewinput").click(function() {
-    var inputGroup = `
-      <div class="input-group">
-          <input type="number" class="form-control col-sm-1" style="display: inline-block;" name="OTCmedpcs[]" aria-describedby="" placeholder="pcs." autocomplete="off">
-          <input type="text" class="form-control col-sm-6 OTCmedDescript" style="display: inline-block;" name="OTCmedDescript[]" aria-describedby="" placeholder="description" autocomplete="off">
-          <input type="hidden" class="form-control col-sm-6 idOTCMed" style="display: inline-block;" name="idOTCMed[]" autocomplete="off">
-          <input type="hidden" class="form-control col-sm-6 lotOTCMed" style="display: inline-block;" name="lotOTCMed[]" autocomplete="off">
-          <span class="text-danger stockWarning" style="display: none;"> Low stock! </span>
-          
-          <button class="btn btn-default remove-input" type="button"><i class="fa fa-close" style="display: inline-block;font-size:20px;color:red"></i></button>
-          <span class="text-info stockLeft" style="display: inline-block; margin-left: 10px;"></span>
-          <span class="expirationWarning" style="display:none;"></span>
-          <ul class="list-group results" style="display: none;font-size:12px;font-weight:400;"></ul>
-      </div>
-    `;
-    $("#inputs-container").append(inputGroup);
-    });
+              prescribedMedicines.forEach(function (medicine) {
+                const details = [
+                  medicine.dose,
+                  medicine.route,
+                  medicine.frequency,
+                  medicine.duration,
+                  medicine.when_to_take
+                ].filter(Boolean).join(' · ');
 
-     $(document).on("click", ".remove-input", function() {
-        $(this).parent().remove();
-    });
+                const item = $('<div>').addClass('prescribed-medicine-item');
+                $('<strong>')
+                  .text((medicine.medicine_name || 'Medicine') + ' (Qty: ' + (medicine.quantity || 0) + ')')
+                  .appendTo(item);
 
-
-    $(document).on('keyup', '.OTCmedDescript', function () {
-        var OTCmedDescript = $(this).val();
-        var results = $(this).siblings('.results');
-
-        if (OTCmedDescript !== '') {
-            $.ajax({
-                url: "/searchItems",
-                method: "post",
-                data: { OTCmedDescript: OTCmedDescript },
-                dataType: "json",
-                success: function (data) {
-                  console.log(data);
-                    results.fadeIn();
-                    results.html('');
-
-                    if (data.length === 0) {
-                        results.append('<li class="list-group-item">No records found</li>');
-                    } else {
-                        $.each(data, function (index, item) {
-                          console.log(item);
-                            results.append('<li class="list-group-item" data-id="' + item.id + '" data-lotno="' + item.lotno + '"data-item_name="' + item.item_name + '" data-stock="' + item.item_quantity + '" data-expiration="' + item.expiration_date + '">' + item.item_name + ' ' +'(' + item.item_quantity +  'pcs.)' +'</li>');
-                        });
-                    }
+                if (details) {
+                  $('<div>').addClass('prescribed-medicine-details').text(details).appendTo(item);
                 }
-            });
-        } else {
-            results.fadeOut();
-        }
-    });
 
-    $(document).on('click', '.results li', function () {
-    var item_name = $(this).data('item_name');  
-    var id = $(this).data('id');
-    
-    var lotno = $(this).data('lotno');
-    console.log(lotno);
-    var stock = $(this).data('stock');
-    var expiration = $(this).data('expiration');
-    var parentInputGroup = $(this).closest('.input-group');
+                if (medicine.instruction) {
+                  $('<div>')
+                    .addClass('prescribed-medicine-instruction')
+                    .text('Instructions: ' + medicine.instruction)
+                    .appendTo(item);
+                }
 
-    parentInputGroup.find('.OTCmedDescript').val(item_name);
-    parentInputGroup.find('.idOTCMed').val(id);
-    parentInputGroup.find('.lotOTCMed').val(lotno);
-
-
-    var stockWarning = parentInputGroup.find('.stockWarning');
-    var stockLeft = parentInputGroup.find('.stockLeft');
-
-    if (stock < 50) {
-        stockWarning.show();
-        stockLeft.text('Stock Left: ' + stock);
-    } else {
-        stockWarning.hide();
-    }
-
- 
-    var expirationWarning = parentInputGroup.find('.expirationWarning');
-    var expirationDate = new Date(expiration);
-    var currentDate = new Date();
-    var threeMonthsLater = new Date();
-    threeMonthsLater.setMonth(currentDate.getMonth() + 3);
-
-    if (expirationDate <= currentDate) {
-        expirationWarning.text('Warning: Expiration Date has passed (' + expiration + ')').show();
-    } else if (expirationDate <= threeMonthsLater) {
-        expirationWarning.text('Warning: Expiration Date is within 3 months (' + expiration + ')').show();
-    } else {
-        expirationWarning.hide();
-    }
-
-
-    $(this).parent('.results').fadeOut();
-});
+                prescribedMedicineList.append(item);
+              });
+            }
 
             $(document).ready(function() {
                 $('input[name="purpose[]"]').prop('checked', false);
@@ -509,6 +543,8 @@ $.ajaxSetup({ headers : { 'X-CSRF-TOKEN' : $('meta[name="csrf-token"]').attr('co
                   $(this).prop("checked", true);
                 }
               });
+
+              loadOtcMedicines(response.viewModal);
 
 
 

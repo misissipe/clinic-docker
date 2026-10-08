@@ -14,6 +14,12 @@
         $patient->provDesc ?? $patient->province ?? null,
     ]));
     $doctorName = 'Amiel Anthony P. Ansalae';
+    $consultationDate = old('consultation_date', $medical->date
+        ? \Carbon\Carbon::parse($medical->date)->format('Y-m-d')
+        : \Carbon\Carbon::now('Asia/Manila')->format('Y-m-d'));
+    $consultationTime = old('consultation_time', $medical->time
+        ? \Carbon\Carbon::parse($medical->time)->format('H:i')
+        : \Carbon\Carbon::now('Asia/Manila')->format('H:i'));
 @endphp
 
 @section('content')
@@ -48,7 +54,26 @@
       </div>
 
       <div class="flow-body">
-       
+        <div class="consultation-datetime mb-3">
+          <div>
+            <label class="field-label" for="consultationDate">Date</label>
+            <input type="date"
+                   id="consultationDate"
+                   name="consultation_date"
+                   class="form-control"
+                   value="{{ $consultationDate }}"
+                   required>
+          </div>
+          <div>
+            <label class="field-label" for="consultationTime">Time</label>
+            <input type="time"
+                   id="consultationTime"
+                   name="consultation_time"
+                   class="form-control"
+                   value="{{ $consultationTime }}"
+                   required>
+          </div>
+        </div>
 
         <label class="field-label">Purpose of Visit</label>
         <div class="read-box mb-3" style="min-height: auto;">
@@ -95,7 +120,7 @@
           </div>
           <div>
             <small>Date</small>
-            <strong>{{ date('M d, Y', strtotime($medical->date)) }}</strong>
+            <strong id="prescriptionCardDate">{{ date('M d, Y', strtotime($consultationDate)) }}</strong>
           </div>
         </div>
 
@@ -145,7 +170,7 @@
           <div class="patient-line patient-name-line"><strong>Name</strong><span>{{ $patientName }}</span></div>
           <div class="patient-line age-sex-line"><strong>Age/Sex</strong><span>{{ $medical->age ?: '—' }} / {{ $medical->gender ?: '—' }}</span></div>
           <div class="patient-line address-line"><strong>Address</strong><span>{{ $patientAddress ?: '—' }}</span></div>
-          <div class="prescription-date">Date: {{ date('F d, Y', strtotime($medical->date)) }}</div>
+          <div class="prescription-date">Date: <span id="prescriptionPreviewDate">{{ date('F d, Y', strtotime($consultationDate)) }}</span></div>
         </div>
 
         <div class="rx-pad">
@@ -377,6 +402,19 @@ $.ajaxSetup({ headers : { 'X-CSRF-TOKEN' : $('meta[name="csrf-token"]').attr('co
 (function () {
   var medicinesContainer = document.getElementById('medicines');
   var medicineEmptyMessage = document.getElementById('medicineEmpty');
+  var consultationDate = document.getElementById('consultationDate');
+
+  function refreshConsultationDate() {
+    if (!consultationDate.value) return;
+
+    var date = new Date(consultationDate.value + 'T00:00:00');
+    document.getElementById('prescriptionCardDate').textContent = date.toLocaleDateString('en-US', {
+      month: 'short', day: '2-digit', year: 'numeric'
+    });
+    document.getElementById('prescriptionPreviewDate').textContent = date.toLocaleDateString('en-US', {
+      month: 'long', day: '2-digit', year: 'numeric'
+    });
+  }
 
   // Prevent user-entered text from being inserted as HTML.
   function safe(value) {
@@ -561,6 +599,7 @@ $.ajaxSetup({ headers : { 'X-CSRF-TOKEN' : $('meta[name="csrf-token"]').attr('co
   medicinesContainer.addEventListener('input', refreshPreview);
   medicinesContainer.addEventListener('change', refreshPreview);
   document.getElementById('patientInstructions').addEventListener('input', refreshPreview);
+  consultationDate.addEventListener('change', refreshConsultationDate);
 
   // Display one form step at a time.
   function showStep(step) {
@@ -579,6 +618,17 @@ $.ajaxSetup({ headers : { 'X-CSRF-TOKEN' : $('meta[name="csrf-token"]').attr('co
 
   function consultationIsValid() {
     var recommendation = document.getElementById('recommendation');
+
+    if (!consultationDate.checkValidity()) {
+      consultationDate.reportValidity();
+      return false;
+    }
+
+    var consultationTime = document.getElementById('consultationTime');
+    if (!consultationTime.checkValidity()) {
+      consultationTime.reportValidity();
+      return false;
+    }
 
     if (!recommendation.value.trim()) {
       recommendation.reportValidity();

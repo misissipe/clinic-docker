@@ -21,6 +21,7 @@ class Medical extends Model
         'findings',
         'parameters',
         'recommendation',
+        'doctorIncharged',
         'status',
         'purpose',
         'others',

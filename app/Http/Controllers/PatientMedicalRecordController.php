@@ -15,6 +15,7 @@ use App\Medical;
 use App\Student;
 use App\Employee;
 use App\Stocks;
+use App\Doctor;
 use DataTables;
 use App\Providers;
 use Carbon\Carbon;
@@ -635,11 +636,8 @@ class PatientMedicalRecordController extends Controller
 
     $medical = Medical::where('id', $record)->where('campus', session('campus'))->firstOrFail();
     $patient = $this->patientForRecord($medical);
-    $doctor = DB::table('doctors')
-      ->where('campus', session('campus'))
-      ->where('specialization', 'physician')
-      ->whereNull('deleted_at')
-      ->first();
+    $doctor = $this->doctorInChargeForRecord($medical);
+
 
     $previousConsultations = Medical::where('patientId', $medical->patientId)
       ->where('role', $medical->role)
@@ -711,6 +709,15 @@ class PatientMedicalRecordController extends Controller
     $this->validateDoctorConsultation($request);
     $medical = Medical::where('id', $record)->where('campus', session('campus'))->firstOrFail();
     $wasWaiting = $medical->status === 'For Doctor';
+    $doctor = $this->currentDoctorInCharge();
+    if (!$doctor) {
+      throw ValidationException::withMessages([
+        'doctorIncharged' => 'No current physician for this campus.',
+      ]);
+    }
+    $request->merge([
+      'doctorIncharged' => $doctor->id,
+    ]);
     $this->persistDoctorConsultation($medical, $request);
     if ($wasWaiting) {
       \App\Services\ClinicNotifications::publish('medical-nurse:' . $medical->id, $medical->campus, ['Nurse', 'Nurse Attendant'], 'A doctor-completed medical consultation is ready for treatment.', '/nurse-treatment/' . $medical->id);
@@ -780,13 +787,12 @@ class PatientMedicalRecordController extends Controller
   {
     $this->validateDoctorConsultation($request);
     $medical = Medical::where('id', $record)->where('campus', session('campus'))->firstOrFail();
+    $medical->date = $request->consultation_date;
+    $medical->time = $request->consultation_time;
 
     $patient = $this->patientForRecord($medical);
-    $doctor = DB::table('doctors')
-      ->where('campus', session('campus'))
-      ->where('specialization', 'physician')
-      ->whereNull('deleted_at')
-      ->first();
+    $doctor = $this->doctorInChargeForRecord($medical);
+  
 
     $medicines = [];
     foreach (($request->medicine_name ?: []) as $index => $name) {
@@ -818,11 +824,8 @@ class PatientMedicalRecordController extends Controller
   {
     $medical = Medical::where('id', $record)->where('campus', session('campus'))->firstOrFail();
     $patient = $this->patientForRecord($medical);
-    $doctor = DB::table('doctors')
-      ->where('campus', session('campus'))
-      ->where('specialization', 'physician')
-      ->whereNull('deleted_at')
-      ->first();
+    $doctor = $this->doctorInChargeForRecord($medical);
+      
 
     $savedMedicines = DB::table('doctor_consultation')
       ->where('patientId', $medical->id)
@@ -901,9 +904,37 @@ class PatientMedicalRecordController extends Controller
     return DB::table('dependent_info')->where('id', $medical->patientId)->where('campus', session('campus'))->first();
   }
 
+  private function currentDoctorInCharge()
+  {
+    return Doctor::where('campus', session('campus'))
+      ->whereRaw('LOWER(specialization) = ?', ['physician'])
+      ->whereNull('deleted_at')
+      ->orderBy('id')
+      ->first();
+  }
+
+  private function doctorInChargeForRecord(Medical $medical)
+  {
+    if ($medical->doctorIncharged) {
+      $assignedDoctor = Doctor::withTrashed()
+        ->where('id', $medical->doctorIncharged)
+        ->where('campus', session('campus'))
+        ->where('specialization','Physician')
+        ->first();
+
+      if ($assignedDoctor) {
+        return $assignedDoctor;
+      }
+    }
+
+    return $this->currentDoctorInCharge();
+  }
+
   private function validateDoctorConsultation(Request $request)
   {
     $request->validate([
+      'consultation_date' => 'required|date',
+      'consultation_time' => 'required|date_format:H:i',
       'recommendation' => 'required|string',
       'medicine_name.*' => 'nullable|string',
       'medicine_quantity.*' => 'nullable|integer|min:1',
@@ -1001,7 +1032,7 @@ class PatientMedicalRecordController extends Controller
             'remaining_stock' => $remainingStock,
             'added_stock' => 0,
             'campus' => session('campus'),
-            'date' => $medical->date ?: now()->toDateString(),
+            'date' => $request->consultation_date,
             'added_by' => (new AESCipher)->decrypt(session('employee_id')),
             'created_at' => now(),
             'updated_at' => now(),
@@ -1027,13 +1058,19 @@ class PatientMedicalRecordController extends Controller
         ->where('campus', session('campus'))
         ->update([
           'recommendation' => $request->recommendation,
+          'doctorIncharged' => $request->doctorIncharged,
           'purpose' => json_encode(array_values(array_unique($purposes))),
+          'date' => $request->consultation_date,
+          'time' => $request->consultation_time,
           'status' => 'For Nurse',
         ]);
 
       $medical->status = 'For Nurse';
       $medical->recommendation = $request->recommendation;
+      $medical->doctorIncharged = $request->doctorIncharged;
       $medical->purpose = json_encode(array_values(array_unique($purposes)));
+      $medical->date = $request->consultation_date;
+      $medical->time = $request->consultation_time;
     });
   }
 }

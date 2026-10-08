@@ -69,7 +69,15 @@
     font-weight:800;
     line-height:1.2;
     white-space:nowrap;
-    text-transform:uppercase}.status-filter b{display:block;color:#10275b;font-size:25px;line-height:1.1;margin-top:8px}
+    text-transform:uppercase
+  }
+  .status-filter b{
+    display:block;
+    color:#10275b;
+    font-size:25px;l
+    ine-height:1.1;
+    margin-top:8px
+  }
 
   .status-filter.for-approval{
     border-left:4px solid #f07800;
@@ -263,6 +271,7 @@
     background:#f1eaff;
     color:#6440ad
   }
+  .action-btn.edit-service{background:#e8f1ff;color:#0758e8}
   .action-btn.cancel-reschedule{
     background:#fff;
     color:#b42335;
@@ -336,16 +345,16 @@
   </div>
 
   <div class="status-cards" role="group" aria-label="Filter appointments by status">
-    <button type="button" class="status-filter pending" data-filter="pending"><span>Pending</span><b>{{ $statusCounts['pending'] }}</b></button>
+    <button type="button" class="status-filter pending active" data-filter="pending"><span>Pending</span><b>{{ $statusCounts['pending'] }}</b></button>
     <button type="button" class="status-filter approved" data-filter="approved"><span>Approved</span><b>{{ $statusCounts['approved'] }}</b></button>
     <button type="button" class="status-filter disapproved" data-filter="disapproved"><span>Disapproved</span><b>{{ $statusCounts['disapproved'] }}</b></button>
     <button type="button" class="status-filter rescheduled" data-filter="rescheduled"><span>Rescheduled</span><b>{{ $statusCounts['rescheduled'] }}</b></button>
-    <button type="button" class="status-filter all active" data-filter="all"><span>All Requests</span><b>{{ $statusCounts['all'] }}</b></button>
+    <button type="button" class="status-filter all" data-filter="all"><span>All Requests</span><b>{{ $statusCounts['all'] }}</b></button>
   </div>
 
   <div class="status-panel">
     <div class="status-toolbar">
-      <h3 id="statusListTitle">All Appointment Requests</h3>
+      <h3 id="statusListTitle">Pending Appointments</h3>
       <div class="status-toolbar-controls">
         <select id="statusMonth" class="status-select" aria-label="Filter by month">
           <option value="">All months</option>
@@ -393,6 +402,8 @@
               $newScheduleOrder = $isRescheduled && $data->date
                 ? date('Y-m-d', strtotime($data->date)).' '.($data->time ?: '00:00:00')
                 : '9999-12-31 23:59:59';
+              $currentServices = json_decode($data->purpose, true);
+              if (!is_array($currentServices)) $currentServices = array_filter([(string) $data->purpose]);
             @endphp
             <tr data-status="{{ $statusKey }}" data-month="{{ $data->date ? (int) date('n', strtotime($data->date)) : '' }}" data-year="{{ $data->date ? date('Y', strtotime($data->date)) : '' }}" data-search="{{ strtolower(trim($data->firstname.' '.$data->middlename.' '.$data->lastname).' '.$data->patientId.' '.$data->role.' '.$formatPurpose($data->purpose).' '.($data->remarks ?? '')) }}">
               <td>
@@ -438,7 +449,7 @@
                 @if(in_array($statusKey, ['for-approval', 'pending'], true))
                   <div class="action-group"><button type="button" class="action-btn approve" data-id="{{ $data->id }}" data-status="Approved"><i class="fa fa-check"></i> Approve</button><button type="button" class="action-btn disapprove" data-id="{{ $data->id }}" data-status="Disapproved"><i class="fa fa-times"></i> Disapprove</button><button type="button" class="action-btn reschedule" data-id="{{ $data->id }}" data-date="{{ $data->date ? date('Y-m-d', strtotime($data->date)) : '' }}" data-time="{{ $data->time ? date('H:i', strtotime($data->time)) : '' }}"><i class="fa fa-calendar"></i> Reschedule</button></div>
                 @elseif($statusKey === 'approved')
-                  <div class="action-group"><button type="button" class="action-btn complete" data-id="{{ $data->id }}"><i class="fa fa-check-circle"></i> Done</button><button type="button" class="action-btn no-show" data-id="{{ $data->id }}"><i class="fa fa-user-times"></i> No Show</button><button type="button" class="action-btn reschedule" data-id="{{ $data->id }}" data-date="{{ $data->date ? date('Y-m-d', strtotime($data->date)) : '' }}" data-time="{{ $data->time ? date('H:i', strtotime($data->time)) : '' }}"><i class="fa fa-calendar"></i> Reschedule</button></div>
+                  <div class="action-group"><button type="button" class="action-btn edit-service" data-id="{{ $data->id }}" data-services='@json($currentServices)'><i class="fa fa-pencil"></i> Edit Service</button><button type="button" class="action-btn complete" data-id="{{ $data->id }}"><i class="fa fa-check-circle"></i> Done</button><button type="button" class="action-btn no-show" data-id="{{ $data->id }}"><i class="fa fa-user-times"></i> No Show</button><button type="button" class="action-btn reschedule" data-id="{{ $data->id }}" data-date="{{ $data->date ? date('Y-m-d', strtotime($data->date)) : '' }}" data-time="{{ $data->time ? date('H:i', strtotime($data->time)) : '' }}"><i class="fa fa-calendar"></i> Reschedule</button></div>
                 @elseif($statusKey === 'rescheduled')
                   <div class="action-group">
                     <button type="button" class="action-btn reschedule edit-schedule" data-id="{{ $data->id }}" data-date="{{ $data->date ? date('Y-m-d', strtotime($data->date)) : '' }}" data-time="{{ $data->time ? date('H:i', strtotime($data->time)) : '' }}" data-reason="{{ $data->remarks ?? '' }}"><i class="fa fa-calendar"></i> Reschedule Date</button>
@@ -466,7 +477,7 @@
 @section('page-scripts')
 <script>
 $(function () {
-  var currentFilter = 'all';
+  var currentFilter = 'pending';
   var titles = {
     pending:'Pending Appointments',
     approved:'Approved Appointments',
@@ -538,6 +549,60 @@ $(function () {
     Swal.fire({title:'Disapprove appointment',input:'textarea',inputLabel:'Reason for disapproval',inputPlaceholder:'Enter the reason shown to the patient',showCancelButton:true,confirmButtonText:'Disapprove',inputValidator:function(value){if(!value || !value.trim()) return 'A reason is required.';}}).then(function (result) {
       if (!result.isConfirmed) return;
       updateStatus(button.data('id'), 'Disapproved', result.value).done(function (response) { if(response.success){Swal.fire('Disapproved',response.success,'success').then(function(){location.reload();});}else{Swal.fire('Error',response.error || 'Unable to disapprove.','error');} });
+    });
+  });
+
+  $(document).on('click', '.action-btn.edit-service', function () {
+    var button = $(this);
+    var selected = [];
+
+    try {
+      selected = JSON.parse(button.attr('data-services') || '[]');
+    } catch (error) {
+      selected = [];
+    }
+
+    var services = ['Consultation', 'Oral Restoration', 'Oral Prophylaxis', 'Tooth Extraction'];
+    var choices = services.map(function (service, index) {
+      var checked = selected.indexOf(service) !== -1 ? ' checked' : '';
+      return '<label for="editService' + index + '" style="display:flex;align-items:center;gap:9px;padding:8px 4px;text-align:left;cursor:pointer">' +
+        '<input id="editService' + index + '" class="edit-service-choice" type="checkbox" value="' + service + '"' + checked + '>' +
+        '<span>' + service + '</span></label>';
+    }).join('');
+
+    Swal.fire({
+      title:'Edit services rendered',
+      html:'<div style="padding:4px 18px">' + choices + '</div>',
+      showCancelButton:true,
+      confirmButtonText:'Save Services',
+      confirmButtonColor:'#0758e8',
+      focusConfirm:false,
+      preConfirm:function () {
+        var values = $('.edit-service-choice:checked').map(function () {
+          return this.value;
+        }).get();
+
+        if (!values.length) {
+          Swal.showValidationMessage('Select at least one service.');
+          return false;
+        }
+
+        return values;
+      }
+    }).then(function (result) {
+      if (!result.isConfirmed) return;
+
+      $.ajax({
+        url:'{{ route('appointment.update-services') }}',
+        type:'POST',
+        data:{id:button.data('id'),services:result.value,_token:'{{ csrf_token() }}'}
+      }).done(function (response) {
+        Swal.fire('Updated', response.success, 'success').then(function () { location.reload(); });
+      }).fail(function (xhr) {
+        var response = xhr.responseJSON || {};
+        var validationError = response.errors ? Object.values(response.errors)[0][0] : '';
+        Swal.fire('Unable to update services', response.error || validationError || 'Please try again.', 'error');
+      });
     });
   });
 

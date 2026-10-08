@@ -146,7 +146,7 @@
       "url": "patient-illness-summary",
       "name": "Patient Illness Summary",
       "i18n": "User",
-      "icon": "mmorph-folder"
+      "icon": "morph-folder"
     },
     {
       "navheader": "Doctor"
@@ -166,6 +166,20 @@
     
     {
       "navheader": "Attendant"
+    },
+    {
+      "url": "#",
+      "name": "Assessment",
+      "i18n": "User",
+      "icon": "pen",
+      "submenu":[{
+        "url": "assessment-student",
+        "name": "Add New"
+      },
+      {
+        "url": "assessment-records",
+        "name": "Record"
+      }]
     },
     {
       "url": "calendar-appointment",
@@ -358,19 +372,13 @@
       "icon": "calendar"
     },
     {
-      "navheader": "Settings"
-    },
-    {
-      "url": "add-new-user",
-      "name": "Clinic Accounts",
-      "i18n": "User",
-      "icon": "users"
+      "navheader": "Authorization Setup"
     },
     {
       "url": "#",
-      "name": "Setting",
+      "name": "Assignments",
       "i18n": "User",
-      "icon": "gear",
+      "icon": "users",
       "submenu":[
       {
          "url": "add-doctors",
@@ -380,6 +388,15 @@
         "url": "add-signatories",
         "name": "Signatories"
       }]
+    },
+    {
+      "navheader": "Settings"
+    },
+    {
+      "url": "add-new-user",
+      "name": "Clinic Accounts",
+      "i18n": "User",
+      "icon": "users"
     }
   ]
 }

@@ -92,9 +92,14 @@ class DentalClientAddController extends Controller
             ["name" => "Treatment Record"]
         ];
 
-        
+
             if ($request->has('id')) {
-            $details = DB::table('dentalchart')->where('id', $this->aes->decrypt($request->id))->where('role',$request->role)->where('campus',session('campus'))->first();
+            $details = DB::table('dentalchart')->where('id', $this->aes->decrypt($request->id))->where('campus',session('campus'))->first();
+
+            if (!$details) {
+                return redirect('/student-dental-record')
+                    ->with('error', 'Dental treatment record not found for the current campus.');
+            }
 
             if($details){
                 $issue = json_decode($details->dental_issues,true);
@@ -133,6 +138,11 @@ class DentalClientAddController extends Controller
                 ->where('t.id',  $request->to_id)
                 ->where('t.campus',session('campus'))
                 ->first();
+
+            if (!$details) {
+                return redirect('/student-dental-record')
+                    ->with('error', 'Dental treatment record not found for the current campus.');
+            }
 
             $issue = json_decode($details->dental_issues,true);
             $newId = $request->to_id;

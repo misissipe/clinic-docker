@@ -139,7 +139,7 @@
     </header>
     <footer>
       <div>
-        <img src="images/logo/other-concern.png" alt="" style="width: 140px; height:70px; float-left; vertical-align: top"> &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;<img src="images/logo/sq_star.png" alt="" style="width: 230px; height:80px; vertical-align: middle"> <img src="images/logo/socotec.png" alt="" style="width: 150px; height:60px; float: right"> </span><br>
+        <img src="images/logo/" alt="" style="width: 140px; height:70px; float-left; vertical-align: top"> &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;<img src="images/logo/sq_star.png" alt="" style="width: 230px; height:80px; vertical-align: middle"> <img src="images/logo/socotec.png" alt="" style="width: 150px; height:60px; float: right"> </span><br>
       </div>
     </footer>
     <main>

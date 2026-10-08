@@ -147,7 +147,7 @@
     </header>
     <footer>
       <div>
-        <img src="images/logo/other-concern.png" alt="" style="width: 150px; height:50px; float-left; vertical-align: top;margin-top:5px;margin-left:50px;margin-right:200px"> <img src="images/logo/qs_star.png" alt="" style="width: 90px; height:70px; vertical-align: middle"> <img src="images/logo/socotec.png" alt="" style="width: 140px; height:55px; float: right;margin-right:300px"> </span><br>
+        <img src="images/logo/" alt="" style="width: 150px; height:50px; float-left; vertical-align: top;margin-top:5px;margin-left:50px;margin-right:200px"> <img src="images/logo/qs_star.png" alt="" style="width: 90px; height:70px; vertical-align: middle"> <img src="images/logo/socotec.png" alt="" style="width: 140px; height:55px; float: right;margin-right:300px"> </span><br>
       </div>
     </footer>
     <main>
