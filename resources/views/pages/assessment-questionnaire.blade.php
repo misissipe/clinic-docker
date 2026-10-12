@@ -539,22 +539,19 @@ use App\Http\Controllers\AESCipher;
           </div>
         </div>
       </div>
-    </div> 
-    
-     
+    </div>  
     <div class="col-md-2">
-          <div class="card">
-            <div class="card-header align-center " style="background-color:rgb(110, 155, 222);display: flex; flex-direction: column; align-items: center; justify-content: center;height:170px;">
-               <img class="img-fluid rounded-circle" src="{{ $mc->profilephoto(['StudentNo' => $data->StudentNo,'campus' => session('campus')]) }}" alt="profile photo" style="width: 150px; height: 150px; object-fit: cover;"
-                 onerror="this.onerror=null; this.src='{{ $data->Sex === 'F' ? asset('images/logo/42101748.png') : asset('images/logo/43514861.png') }}'; this.classList.remove('rounded-circle'); this.style.width='150px'; this.style.height='150px';">
-            </div>   
-            <div class="card-body" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 20px;">
-              <label style="font-size: 18px;" id="id">{{$role}} </label>
-              <label style="font-size: 12px;" id="id"></label>
-            </div>
-          </div>   
-                         
+      <div class="card">
+        <div class="card-header align-center " style="background-color:rgb(110, 155, 222);display: flex; flex-direction: column; align-items: center; justify-content: center;height:170px;">
+          <img class="img-fluid rounded-circle" src="{{ $mc->profilephoto(['StudentNo' => $data->StudentNo,'campus' => session('campus')]) }}" alt="profile photo" style="width: 150px; height: 150px; object-fit: cover;" onerror="this.onerror=null; this.src='{{ $data->Sex === 'F' ? asset('images/logo/42101748.png') : asset('images/logo/43514861.png') }}'; this.classList.remove('rounded-circle'); this.style.width='150px'; this.style.height='150px';">
+        </div>   
+        <div class="card-body" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 20px;">
+          <label style="font-size: 18px;" id="id">{{$role}} </label>
+          <label style="font-size: 12px;" id="id"></label>
         </div>
+      </div>   
+                         
+    </div>
   </div>                  
   </div>
 </section>       

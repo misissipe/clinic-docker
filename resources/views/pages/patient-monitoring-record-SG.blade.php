@@ -43,7 +43,7 @@
   .intake-progress span { flex:1; padding:12px 8px; border-radius:9px; background:#f0f3f8; color:#718096; font-size:12px; font-weight:700; text-align:center; }
   .intake-progress span.active { background:#5a8dee; color:#fff; }
   .intake-progress span.done { background:#e3f3eb; color:#24845d; }
-  #ReqLabRes,#Others,#Remarks,#medicineOTC,#treatmentInput { display:none !important; }
+  #medicineOTC,#treatmentInput { display:none !important; }
   #intakeStep1 .row { margin:0 -6px; }
   #intakeStep1 .form-check { padding:0 6px; max-width:33.333%; flex:0 0 33.333%; }
   #intakeStep1 .form-check label { display:flex; align-items:center; min-height:48px; border:1px solid #e1e7f0; border-radius:9px; padding:10px 12px 10px 34px; margin:0 0 10px; color:#425b7d; font-size:12px !important; font-weight:600; background:#fbfcfe; cursor:pointer; position:relative; }
@@ -139,6 +139,20 @@
                   <label for="cancer" style="text-transform: capitalize;font-size:12px;">Referral</label>
                 </div>
               </div>
+              <div id="purposeConditionalFields" class="mt-2">
+                <div class="form-outline" id="Others" style="display:none;">
+                  <label class="form-label" for="otherConcernSpecify" style="font-weight:700">Other/s, please specify:<span class="text-danger">*</span></label>
+                  <input type="text" id="otherConcernSpecify" class="form-control" name="specify" value="{{ old('specify') }}" autocomplete="off" disabled>
+                </div>
+                <div class="form-outline" id="ReqLabRes" style="display:none;">
+                  <label class="form-label" for="requiredLabResults" style="font-weight:700">Required Laboratory Result/s:<span class="text-danger">*</span></label>
+                  <input type="text" id="requiredLabResults" class="form-control" name="reqlabres" value="{{ old('reqlabres') }}" autocomplete="off" disabled>
+                </div>
+                <div class="form-outline" id="Remarks" style="display:none;">
+                  <label class="form-label" for="referralActionTaken" style="font-weight:700">Action Taken:<span class="text-danger">*</span></label>
+                  <input type="text" id="referralActionTaken" class="form-control" name="remarks" value="{{ old('remarks') }}" autocomplete="off" disabled>
+                </div>
+              </div>
             </div> 
             <br>
             <div id="intakeStep2" class="form-outline intake-step">
@@ -176,18 +190,6 @@
               <textarea class="form-control" name="recommendation" value="" id="recommendation" rows="3" ></textarea>
             </div>
             <br>
-            <div class="form-outline" id="ReqLabRes">
-              <label class="form-label " for="textAreaExample" style="font-weight:700">Required Laboratory Result/s:<span class="text-danger">*</span></label>
-            <input type="text" class="form-control col-sm-4 " style="display: inline-block;" name="reqlabres" aria-describedby="" placeholder="" autocomplete="off">
-            </div>
-              <div class="form-outline" id="Others">
-              <label class="form-label " for="textAreaExample" style="font-weight:700">Other/s, please specify:<span class="text-danger">*</span></label>
-              <input type="text" class="form-control col-sm-4 " style="display: inline-block;" name="specify" aria-describedby="" placeholder="" autocomplete="off">
-            </div>
-              <div class="form-outline" id="Remarks">
-              <label class="form-label " for="textAreaExample" style="font-weight:700">Action Taken:<span class="text-danger">*</span></label>
-              <input type="text" class="form-control col-sm-4 " style="display: inline-block;" name="remarks" aria-describedby="" placeholder="" autocomplete="off">
-            </div>
             <div class="form-outline" id="medicineOTC">
               <button class="btn btn-success" id="addNewinput" type="button">Add</button><br>
               <label class="form-label" style="display: inline-block;" for="textAreaExample">Medicine:<span class="text-danger">*</span></label>
@@ -327,8 +329,10 @@ $(document).ready(function() {
 
     if ($("#OC").is(":checked")) {
       $("#Others").show();
+      $("#otherConcernSpecify").prop("disabled", false).prop("required", true);
     } else {
       $("#Others").hide();
+      $("#otherConcernSpecify").prop("required", false).prop("disabled", true).val('');
     }
   });
 });
@@ -340,8 +344,10 @@ $(document).ready(function() {
 
     if ($("#Ref").is(":checked")) {
       $("#Remarks").show();
+      $("#referralActionTaken").prop("disabled", false).prop("required", true);
     } else {
       $("#Remarks").hide();
+      $("#referralActionTaken").prop("required", false).prop("disabled", true).val('');
     }
   });
 });
@@ -353,8 +359,10 @@ $(document).ready(function() {
 
     if ($("#IC").is(":checked")) {
       $("#ReqLabRes").show();
+      $("#requiredLabResults").prop("disabled", false).prop("required", true);
     } else {
       $("#ReqLabRes").hide();
+      $("#requiredLabResults").prop("required", false).prop("disabled", true).val('');
     }
   });
 });

@@ -108,7 +108,7 @@ class EmployeeDentalController extends Controller
         $result =DB::connection('hrmis')
             ->table('employee')
             ->where(function ($query) use ($request) {
-                $query->where('AgencyNumber', 'like', '%' . $request->search . '%')
+                $query->where('id', 'like', '%' . $request->search . '%')
                     ->orWhere('LastName', 'LIKE', '%' . $request->search . '%')
                     ->orWhere('FirstName', 'LIKE', '%' . $request->search . '%')
                     ->orWhere('MiddleName', 'LIKE', '%' . $request->search . '%');
@@ -119,6 +119,7 @@ class EmployeeDentalController extends Controller
             ->get();
     
             $encryptedResults = $result->map(function ($employee) {
+               
                 $employee->encryptedEmployeeNo = $this->aes->encrypt($employee->id);
             return $employee;
         });

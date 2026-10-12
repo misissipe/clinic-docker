@@ -555,8 +555,27 @@ use App\Http\Controllers\AESCipher;
             <div class="table-responsive">
               <form action="/addNewDentalRecEmployee" method="POST" id="saveRecord"> 
                 @csrf
-               <input type="hidden" class="col-sm-1 cert   input" name="role"  id="role" style="" value="Employee" >
-               <input type="hidden" class=" col-sm-2 border-0 age" name="patientId"  id="age" style="font-weight: bold;" value={{$record->AgencyNumber}} readonly>
+              <input type="hidden" class="col-sm-1 cert   input" name="role"  id="role" style="" value="Employee" >
+              <input type="hidden" class="col-sm-1 cert   input" name="role"  id="role" style="" value="Employee" >
+              <input type="hidden" class=" col-sm-1  date input" name="date"  id="date" style="font-weight: bold;font-size:16px;" value="" readonly>
+              <input type="hidden" class="col-sm-8 border-0 id" name="id" value="{{ $record->id }}" id="id" style="font-weight:400;color:rgb(58, 57, 57)" >
+              <input type="hidden" class="col-sm-8 border-0 id" name="patientId" value="{{$record->AgencyNumber }}" id="id" style="font-weight:400;color:rgb(58, 57, 57)" >
+              <input type="hidden" class="col-sm-8 border-0 id" name="LastName" value="{{ $record->LastName }}" id="lastname" style="font-weight:400;color:rgb(58, 57, 57)" >
+              <input type="hidden" class="col-sm-8 border-0 id" name="FirstName" value="{{ $record->FirstName }}" id="firstname" style="font-weight:400;color:rgb(58, 57, 57)" >
+              <input type="hidden" class="col-sm-8 border-0 id" name="MiddleName" value="{{ $record->MiddleName}}" id="middlename" style="font-weight:400;color:rgb(58, 57, 57)" >
+              <input type="hidden" class="col-sm-8 border-0 id" name="Sex" value="{{ (new AESCipher)->decrypt($record->Sex) }}" id="gender" style="font-weight:400;color:rgb(58, 57, 57)" >
+              <input type="hidden" class="col-sm-8 border-0 id" name="DateOfBirth" value="{{ (new AESCipher)->decrypt($record->DateOfBirth) }}" id="bday" style="font-weight:400;color:rgb(58, 57, 57)" >
+              <input type="hidden" class="col-sm-8 border-0 id" name="EmploymentStatus" value="{{ $record->EmploymentStatus }}" id="course" style="font-weight:400;color:rgb(58, 57, 57)" >
+              <input type="hidden" class="col-sm-8 border-0 id" name="poscourse" value="{{$record->DepartmentName }}" id="poscourse" style="font-weight:400;color:rgb(58, 57, 57)" >
+              <input type="hidden" class="col-sm-8 border-0 id" name="DepartmentName" value="{{ $record->DepartmentName}}" id="course" style="font-weight:400;color:rgb(58, 57, 57)" >
+              <input type="hidden" class="col-sm-8 border-0 id" name="Cellphone" value="{{ $record->Cellphone }}" id="bday" style="font-weight:400;color:rgb(58, 57, 57)" >
+              <input type="hidden" class="col-sm-8 border-0 id" name="CivilStatus" value="{{ (new AESCipher)->decrypt($record->CivilStatus) }}" id="middlename" style="font-weight:400;color:rgb(58, 57, 57)" >
+              <input type="hidden" class="col-sm-8 border-0 id" name="Citizenship" value="{{ (new AESCipher)->decrypt($record->Citizenship) }}" id="firstname" style="font-weight:400;color:rgb(58, 57, 57)" > 
+              <input type="hidden" class="col-sm-8 border-0 id" name="RBarangay" value="{{ (new AESCipher)->decrypt($record->RBarangay) }}" id="firstname" style="font-weight:400;color:rgb(58, 57, 57)" >
+              <input type="hidden" class="col-sm-8 border-0 id" name="citymunDesc" value="{{ $record->citymunDesc}}" id="middlename" style="font-weight:400;color:rgb(58, 57, 57)" >
+              <input type="hidden" class="col-sm-8 border-0 id" name="provDesc" value="{{ $record->provDesc}}" id="firstname" style="font-weight:400;color:rgb(58, 57, 57)" >
+              <input type="hidden" class="col-sm-8 border-0 id" name="EmailAddress" value="{{ $record->EmailAddress }}" id="firstname" style="font-weight:400;color:rgb(58, 57, 57)" >                      
+           
                {{-- <input type="hidden" class=" col-sm-2 border-0 id" name="appointmentId"  id="id" style="font-weight: bold;" value={{$appointmentId}} readonly> --}}
                {{-- <input type="hidden" class=" col-sm-2 border-0 id" name="status"  id="id" style="font-weight: bold;" value="Created" readonly>
                <input type="hidden" class=" col-sm-1  date input" name="date"  id="date" style="font-weight: bold;font-size:16px;" value="" readonly>
@@ -961,7 +980,7 @@ $("#saveRecord").submit(function(e) {
         }).then((response2) => {
           if (response2.isConfirmed) {
             console.log(response.newId);
-            window.location.href = "/dental-treatment-record?id=" + encodeURIComponent(response.newId) + "&role=Employee";
+            window.location.href = "/dental-treatment-record?id=" + encodeURIComponent(response.newId)  + "&role=Employee";
           }
         });
         console.log(response);

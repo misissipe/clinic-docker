@@ -27,6 +27,9 @@ use Illuminate\Support\Facades\Route;
 
 // dashboard Routes
 Route::get('/','DashboardController@dashboardEcommerce')->middleware("authuser");
+Route::get('/analytics-dashboard','AnalyticsDashboardController@index')
+    ->middleware('authuser')
+    ->name('analytics.dashboard');
 
 
 Route::group(['prefix' => 'users'], function() {
@@ -514,6 +517,7 @@ Route::middleware(['authuser'])->group(function () {
 });
 #Stocks
 Route::middleware(['authuser'])->group(function () {
+    Route::get('/medicine','StocksController@indexmedicine')->name('medicine');
     Route::get('/add-items','StocksController@index');
     Route::post('/searchitem','StocksController@searchitem')->name('searchitem');
     Route::post('/searchUnit','StocksController@searchUnit')->name('searchUnit');

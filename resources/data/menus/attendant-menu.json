@@ -8,6 +8,12 @@
       "icon": "dashboard"
     },
     {
+      "url": "analytics-dashboard",
+      "name": "Analytics Dashboard",
+      "i18n": "Analytics Dashboard",
+      "icon": "bar-chart-alt-2"
+    },
+    {
       "navheader": "Calendar"
     },
     {

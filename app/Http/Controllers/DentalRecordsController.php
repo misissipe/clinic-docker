@@ -211,7 +211,7 @@ class DentalRecordsController extends Controller
             $search = $request->input('search');
             $role = $request->get('role');
             
-            $result = DB::table('dependent')
+            $result = DB::table('dentalchart')
                 ->where('role',$role)
                 ->where(function ($query) use ($request) {
                     $query->where('id', 'like', '%' . $request->search . '%')
@@ -318,8 +318,6 @@ class DentalRecordsController extends Controller
             ->whereNull('t.deleted_at')
             ->orderBy('t.date', 'desc')
             ->get();
-
-               
 
 
         return view('pages.treatment-record-list', ['pageConfigs' => $pageConfigs, 'breadcrumbs' => $breadcrumbs], compact('age','view', 'name', 'request','data'));
@@ -687,16 +685,16 @@ public function updateAssessmentRecord(Request $request, $studentNo, $assessment
     return response()->json(['success' => 'Assessment record updated successfully.']);
 }
 
-public function deleteAssessmentRecord($studentNo, $assessmentId)
-{
-    $deleted = DB::connection('mysql')->table('assessment')
-        ->where('id', $assessmentId)
-        ->where('patientId', $studentNo)
-        ->where('campus', session('campus'))
-        ->delete();
+    public function deleteAssessmentRecord($studentNo, $assessmentId)
+    {
+        $deleted = DB::connection('mysql')->table('assessment')
+            ->where('id', $assessmentId)
+            ->where('patientId', $studentNo)
+            ->where('campus', session('campus'))
+            ->delete();
 
-    if (!$deleted) return response()->json(['error' => 'Assessment record not found.'], 404);
+        if (!$deleted) return response()->json(['error' => 'Assessment record not found.'], 404);
 
-    return response()->json(['success' => 'Assessment record deleted successfully.']);
-}
+        return response()->json(['success' => 'Assessment record deleted successfully.']);
+    }
 }

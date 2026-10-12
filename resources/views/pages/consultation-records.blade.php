@@ -147,7 +147,7 @@
     Swal.fire({
       icon: 'success',
       title: 'Success!',
-      text: @json(session('success')),
+      html: '<div>' + @json(session('success')) + '</div><div style="margin-top:12px;font-weight:700;color:#405a7b;">Logout: ' + @json(session('logout_at')) + '</div>',
       confirmButtonText: 'OK',
       confirmButtonColor: '#5a8dee'
     });

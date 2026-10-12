@@ -73,6 +73,12 @@ use App\Http\Controllers\AESCipher;
  .blur {
         filter: blur(1px);
     }
+  #dental-otc-medicine{display:none;margin:12px 0 4px 0}
+  #dental-otc-medicine .input-group{position:relative;display:flex;flex-wrap:wrap;margin-bottom:8px}
+  #dental-otc-medicine .otc-quantity{flex:0 0 90px;max-width:90px}
+  #dental-otc-medicine .OTCmedDescript{flex:1 1 220px}
+  #dental-otc-medicine .results{position:absolute;left:90px;right:0;top:38px;z-index:30;max-height:180px;overflow-y:auto}
+  #dental-otc-medicine .medicine-message{flex-basis:100%;font-size:11px;margin-top:3px}
 </style>
 @endsection
 {{-- page-styles --}}
@@ -402,12 +408,25 @@ use App\Http\Controllers\AESCipher;
             <label for="cancer" style="text-transform: capitalize;font-size:12px;">Tooth Extraction</label>
           </div>
           <div class="form-check">
-            <input type="checkbox" id="" name="remarks[]" value="OTC Medicine">
-            <label for="cancer" style="text-transform: capitalize;font-size:12px;">OTC Medicine</label>
-          </div>
-           <div class="form-check">
             <input type="checkbox" id="" name="remarks[]" value="Dental Certificate">
             <label for="cancer" style="text-transform: capitalize;font-size:12px;">Dental Certificate</label>
+          </div>
+          <div class="form-check">
+            <input type="checkbox" id="dentalOtcCheckbox" name="remarks[]" value="OTC Medicine">
+            <label for="dentalOtcCheckbox" style="text-transform: capitalize;font-size:12px;">OTC Medicine</label>
+          </div>
+          <div id="dental-otc-medicine">
+            <button class="btn btn-success btn-sm" id="add-dental-otc" type="button">Add</button><br>
+            <label class="form-label" style="display:inline-block;" for="dentalOtcInputs">Medicine:<span class="text-danger">*</span></label>
+            <div id="dentalOtcInputs">
+              <div class="input-group dental-otc-row">
+                <input type="number" min="1" class="form-control otc-quantity" name="OTCmedpcs[]" placeholder="pcs." autocomplete="off" disabled>
+                <input type="text" class="form-control OTCmedDescript" name="OTCmedDescript[]" placeholder="description" autocomplete="off" disabled>
+                <input type="hidden" class="idOTCMed" name="idOTCMed[]" disabled>
+                <span class="medicine-message text-info"></span>
+                <ul class="list-group results" style="display:none;font-size:12px;font-weight:400;"></ul>
+              </div>
+            </div>
           </div>
         </div>
         <div id="spinner-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.2); z-index: 9999;">
@@ -479,6 +498,93 @@ var formattedDate = today.getFullYear() + '-' + (today.getMonth() + 1).toString(
 
 $('.date').val(formattedDate);
 
+function setDentalOtcEnabled(enabled) {
+  $('#dental-otc-medicine').toggle(enabled);
+  $('#dentalOtcInputs input').prop('disabled', !enabled).prop('required', enabled);
+  $('#dentalOtcInputs .idOTCMed').prop('required', enabled);
+}
+
+$('#dentalOtcCheckbox').on('change', function () {
+  setDentalOtcEnabled(this.checked);
+});
+setDentalOtcEnabled($('#dentalOtcCheckbox').is(':checked'));
+
+$('#add-dental-otc').on('click', function () {
+  $('#dentalOtcInputs').append(
+    '<div class="input-group dental-otc-row">' +
+      '<input type="number" min="1" class="form-control otc-quantity" name="OTCmedpcs[]" placeholder="pcs." autocomplete="off" required>' +
+      '<input type="text" class="form-control OTCmedDescript" name="OTCmedDescript[]" placeholder="description" autocomplete="off" required>' +
+      '<input type="hidden" class="idOTCMed" name="idOTCMed[]" required>' +
+      '<button class="btn btn-default remove-dental-otc" type="button"><i class="fa fa-close" style="font-size:20px;color:red"></i></button>' +
+      '<span class="medicine-message text-info"></span>' +
+      '<ul class="list-group results" style="display:none;font-size:12px;font-weight:400;"></ul>' +
+    '</div>'
+  );
+});
+
+$(document).on('click', '.remove-dental-otc', function () {
+  $(this).closest('.dental-otc-row').remove();
+});
+
+$(document).on('input', '#dentalOtcInputs .OTCmedDescript', function () {
+  var medicineInput = $(this);
+  var row = medicineInput.closest('.dental-otc-row');
+  var results = row.find('.results');
+  var description = $.trim(medicineInput.val());
+
+  row.find('.idOTCMed').val('');
+  row.find('.medicine-message').text('');
+
+  if (description === '') {
+    results.hide().empty();
+    return;
+  }
+
+  $.ajax({
+    url: '/searchMed',
+    method: 'POST',
+    data: {OTCmedDescript: description},
+    dataType: 'json',
+    success: function (data) {
+      results.empty().show();
+      if (!data.length) {
+        results.append('<li class="list-group-item">No records found</li>');
+        return;
+      }
+
+      $.each(data, function (index, item) {
+        $('<li class="list-group-item">')
+          .text(item.item_name + ' (' + item.item_quantity + ' pcs., Exp. ' + (item.expiration_date || 'N/A') + ')')
+          .attr('data-id', item.id)
+          .attr('data-name', item.item_name)
+          .attr('data-stock', item.item_quantity)
+          .appendTo(results);
+      });
+    }
+  });
+});
+
+$(document).on('click', '#dentalOtcInputs .results li[data-id]', function () {
+  var selected = $(this);
+  var row = selected.closest('.dental-otc-row');
+  var stock = parseInt(selected.attr('data-stock'), 10);
+
+  row.find('.OTCmedDescript').val(selected.attr('data-name'));
+  row.find('.idOTCMed').val(selected.attr('data-id'));
+  row.find('.otc-quantity').attr('max', stock);
+  row.find('.medicine-message')
+    .toggleClass('text-danger', stock < 50)
+    .toggleClass('text-info', stock >= 50)
+    .text((stock < 50 ? 'Low stock! ' : '') + 'Stock left: ' + stock);
+  selected.parent().hide().empty();
+});
+
+$(document).on('click', function (event) {
+  if (!$(event.target).closest('.dental-otc-row').length) {
+    $('#dentalOtcInputs .results').hide();
+  }
+});
+
 $(document).ready(function() {
   $('.datatables').DataTable({
    'aLengthMenu' :[[10,20,50,100,-1],[10,20,50,100,'All']],
@@ -526,7 +632,7 @@ $("#saveRecord").submit(function (e) {
   var form = $(this);
   var actionUrl = form.attr('action')
 
-  $("#saveBtn").prop("disabled", true)
+  $("#checkBtn").prop("disabled", true)
   $("#spinner-overlay").show();
     $(".blur").addClass("blur");
 
@@ -540,7 +646,17 @@ $("#saveRecord").submit(function (e) {
 
     $("#spinner-overlay").hide();
     $(".blur").removeClass("blur");
-    $("#saveBtn").prop("disabled", false);
+    $("#checkBtn").prop("disabled", false);
+
+  } else if ($('#dentalOtcCheckbox').is(':checked') && $('#dentalOtcInputs .idOTCMed').filter(function () { return !this.value; }).length) {
+    Swal.fire({
+      title: 'Select Medicine',
+      text: 'Please select each medicine from the inventory results.',
+      icon: 'error'
+    });
+    $("#spinner-overlay").hide();
+    $(".blur").removeClass("blur");
+    $("#checkBtn").prop("disabled", false);
 
   } else {
     $.ajax({
@@ -560,7 +676,7 @@ $("#saveRecord").submit(function (e) {
           confirmButtonText: 'Okay',
         }).then((response1) => {
           
-          $("#saveBtn").prop("disabled", false);
+          $("#checkBtn").prop("disabled", false);
 
           if (response1.isConfirmed) {
             window.location.href = "/treatment-record-status?id=" + encodeURIComponent(response.newId);
@@ -573,10 +689,17 @@ $("#saveRecord").submit(function (e) {
           title: response.Message,
           
          }).then((response2) => {
-          $("#saveBtn").prop("disabled", false);
+          $("#checkBtn").prop("disabled", false);
 
         });
         }
+      },
+      error: function (xhr) {
+        $("#spinner-overlay").hide();
+        $(".blur").removeClass("blur");
+        $("#checkBtn").prop("disabled", false);
+        var response = xhr.responseJSON || {};
+        Swal.fire({icon:'error', title:'Unable to Save', text:response.Message || response.message || 'Please try again.'});
       }
     });
   }

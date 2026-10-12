@@ -469,6 +469,21 @@ class PatientMedicalRecordController extends Controller
           'date' => 'required|date',
           'time' => 'required',
         ]);
+        if (in_array('Other Concerns', $request->purpose, true) && trim((string) $request->specify) === '') {
+          throw ValidationException::withMessages([
+            'specify' => 'Please specify the other concern.',
+          ]);
+        }
+        if (in_array('Issuance of Certificate', $request->purpose, true) && trim((string) $request->reqlabres) === '') {
+          throw ValidationException::withMessages([
+            'reqlabres' => 'Please enter the required laboratory result/s.',
+          ]);
+        }
+        if (in_array('Referral', $request->purpose, true) && trim((string) $request->remarks) === '') {
+          throw ValidationException::withMessages([
+            'remarks' => 'Please enter the action taken for the referral.',
+          ]);
+        }
         $hhId = $request->hhId;
         $patientId = $request->patientId;
         $findings = $request->findings;
@@ -873,6 +888,8 @@ class PatientMedicalRecordController extends Controller
     $request->validate([
       'purpose' => 'required|array|min:1',
       'recommendation' => 'required|string',
+      'logged_out_date' => 'required|date|before_or_equal:today',
+      'logged_out_time' => 'required|date_format:H:i',
     ]);
 
     $medical = Medical::where('id', $record)->where('campus', session('campus'))->firstOrFail();
@@ -883,12 +900,24 @@ class PatientMedicalRecordController extends Controller
 
     $medical->purpose = json_encode(array_values(array_unique($purposes)));
     $medical->recommendation = $request->recommendation;
-    $medical->logged_out = Carbon::now('Asia/Manila')->format('H:i:s');
+    $logoutAtManila = Carbon::createFromFormat(
+      'Y-m-d H:i',
+      $request->logged_out_date . ' ' . $request->logged_out_time,
+      'Asia/Manila'
+    );
+    $medical->logged_out_date = $logoutAtManila->format('Y-m-d');
+    $medical->logged_out = $logoutAtManila->format('H:i:s');
     $medical->status = 'InActive';
     $medical->save();
 
+    $logoutAt = $logoutAtManila->format('M d, Y h:i A');
+
     return redirect()->route('medical.consultation-records')
-      ->with('success', 'Patient treatment record completed and logged out successfully.');
+      ->with('success', 'Patient treatment record completed and logged out successfully.')
+      ->with('logout_at', $logoutAt)
+      ->with('logout_record_id', $medical->id)
+      ->with('logout_date', $logoutAtManila->format('Y-m-d'))
+      ->with('logout_time', $logoutAtManila->format('H:i'));
   }
 
   private function patientForRecord(Medical $medical)

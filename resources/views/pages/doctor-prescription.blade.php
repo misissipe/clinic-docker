@@ -130,9 +130,9 @@
     }
 
     .rx-symbol {
-        font-size: 45px;
-        font-family: serif;
-        color: #172b4d;
+        width: 55px;
+        height: 55px;
+        object-fit: contain;
     }
 
     .prescription-list li {
@@ -833,9 +833,7 @@ Rest and drink plenty of fluids.</textarea>
                             {{-- Rx --}}
                             <div class="d-flex justify-content-between align-items-end mb-3">
 
-                                <div class="rx-symbol">
-                                    ℞
-                                </div>
+                                <img class="rx-symbol" src="{{ asset('images/logo/rx.png') }}?v={{ filemtime(public_path('images/logo/rx.png')) }}" alt="Rx">
 
                                 <small>
                                     Date:

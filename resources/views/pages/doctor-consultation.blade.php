@@ -174,7 +174,7 @@
         </div>
 
         <div class="rx-pad">
-          <div class="rx">℞</div>
+          <img class="rx" src="{{ asset('images/logo/rx.png') }}?v={{ filemtime(public_path('images/logo/rx.png')) }}" alt="Rx">
           <ol id="previewMedicines" class="preview-list">
             <li class="text-muted">No medications added.</li>
           </ol>
@@ -198,7 +198,8 @@
       </div>
 
       <div class="preview-actions">
-        <button type="button" class="btn btn-outline-primary step-back" data-target="2">Back</button>
+        <button type="button" class="btn btn-secondary step-back" data-target="2">Back</button>
+        <a href="{{ route('medical.doctor-consultations') }}" class="btn btn-danger">Exit</a>
         <button type="submit"
                 class="btn btn-outline-primary"
                 formaction="{{ route('medical.doctor-prescription.pdf', $medical->id) }}"

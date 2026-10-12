@@ -47,12 +47,22 @@
                             <label for="cancer" style="text-transform: capitalize;font-size:12px;">Tooth Extraction</label>
                         </div>
                         <div class="form-check">
-                            <input type="checkbox" id="" name="remarks[]" value="OTC Medicine">
-                            <label for="cancer" style="text-transform: capitalize;font-size:12px;">OTC Medicine</label>
-                        </div>
-                        <div class="form-check">
                             <input type="checkbox" id="" name="remarks[]" value="Dental Certificate">
                             <label for="cancer" style="text-transform: capitalize;font-size:12px;">Dental Certificate</label>
+                        </div>
+                        <div class="form-check">
+                            <input type="checkbox" id="editOtcCheckbox" name="remarks[]" value="OTC Medicine">
+                            <label for="editOtcCheckbox" style="text-transform:capitalize;font-size:12px;">OTC Medicine</label>
+                        </div>
+                        <div id="editOtcPanel" class="mt-1 p-1" style="display:none;border:1px solid #d7e0ed;border-radius:8px;background:#f8faff;">
+                            <strong style="font-size:13px;color:#405a7b;">MEDICINE GIVEN AT DENTAL TREATMENT RECORD</strong>
+                            <div class="row mt-1" style="font-size:11px;font-weight:bold;color:#405a7b;"><div class="col-2">QUANTITY</div><div class="col-9">MEDICINE</div></div>
+                            <div id="editOtcRows"></div>
+                            <button type="button" id="addEditOtc" class="btn btn-outline-primary btn-sm"><i class="fa fa-plus"></i> Add Medicine</button>
+                        </div>
+                        <div id="existingOtcPanel" class="mt-2" style="display:none;">
+                            <strong style="font-size:13px;color:#405a7b;">MEDICINE ALREADY GIVEN AT TREATMENT RECORD</strong>
+                            <div id="existingOtcCards"></div>
                         </div>
                     </div>
                 </div>

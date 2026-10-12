@@ -11,6 +11,8 @@ use Illuminate\Pagination\Paginator;
 use App\Student;
 use App\Treatment;
 use App\Appointment;
+use App\Stocks;
+use App\Inventory;
 use DataTables;
 use App\Providers;
 use Carbon\Carbon;
@@ -92,21 +94,15 @@ class DentalClientAddController extends Controller
             ["name" => "Treatment Record"]
         ];
 
-
             if ($request->has('id')) {
-            $details = DB::table('dentalchart')->where('id', $this->aes->decrypt($request->id))->where('campus',session('campus'))->first();
-
-            if (!$details) {
-                return redirect('/student-dental-record')
-                    ->with('error', 'Dental treatment record not found for the current campus.');
-            }
+            $details = DB::table('dentalchart')->where('id', $this->aes->decrypt($request->id))->where('role',$request->role)->where('campus',session('campus'))->first();
 
             if($details){
                 $issue = json_decode($details->dental_issues,true);
             }else{
                 $issue = null;
             }
-        
+
             $today = Carbon::today();
             if ($details->role === 'Student')
             {
@@ -139,11 +135,6 @@ class DentalClientAddController extends Controller
                 ->where('t.campus',session('campus'))
                 ->first();
 
-            if (!$details) {
-                return redirect('/student-dental-record')
-                    ->with('error', 'Dental treatment record not found for the current campus.');
-            }
-
             $issue = json_decode($details->dental_issues,true);
             $newId = $request->to_id;
 
@@ -172,6 +163,20 @@ class DentalClientAddController extends Controller
         $response = Treatment::where('id',  $this->aes->decrypt($request->id))
             ->where('campus',session('campus'))
             ->first();
+
+        if ($response) {
+            $otc = DB::table('otc_medicine')
+                ->where('patientId', $response->patientId)
+                ->where('campus', session('campus'))
+                ->where('date', $response->date)
+                ->where('OTCremarks', $response->diagnosis)
+                ->whereNull('deleted_at')
+                ->latest('id')
+                ->first();
+            $response->otc_medicines = $otc ? array_map(function ($name, $quantity) {
+                return ['name' => $name, 'quantity' => $quantity];
+            }, json_decode($otc->OTCmedDescript, true) ?: [], json_decode($otc->OTCmedpcs, true) ?: []) : [];
+        }
    
         return response()->json( $response);
     } 
@@ -207,10 +212,6 @@ class DentalClientAddController extends Controller
                 'created_at' => Carbon::now('Asia/Manila'),
                 'date' =>   $request->date,
              ]);
-            if ($save) {
-                \App\Services\ClinicNotifications::publish('dental-treatment:' . \Illuminate\Support\Str::uuid(), session('campus'), ['Dentist', 'Attendant'], 'A new dental treatment record was saved.', '/treatment-records');
-            }
-
      
               $newId = DB::table('treatmentrecord')
                 ->where('patientId', $request->id)
@@ -227,15 +228,75 @@ class DentalClientAddController extends Controller
     }
     public function updateModal(Request $request){
 
-        $update = Treatment::where('id',  $request->id)
-            ->where('campus',session('campus'))
-            ->update([ 
-            'date' => $request->date,
-            'diagnosis' => $request->diagnosis,
-            'treatment' => $request->treatment,
-            'remarks' => json_encode($request->remarks),
-            'updated_at' => Carbon::now('Asia/Manila'),
-         ]);
+        $record = Treatment::where('id', $request->id)->where('campus', session('campus'))->firstOrFail();
+        $remarks = $request->input('remarks', []);
+        $hasOtc = in_array('OTC Medicine', $remarks, true);
+        $names = $request->input('editOTCmedDescript', []);
+        $quantities = $request->input('editOTCmedpcs', []);
+        $stockIds = $request->input('editIdOTCMed', []);
+
+        if ($hasOtc && (!empty($names) && (count($names) !== count($quantities) || count($names) !== count($stockIds)))) {
+            return response()->json(['Error' => 1, 'Message' => 'Please complete every OTC medicine row.']);
+        }
+
+        try {
+        DB::transaction(function () use ($request, $record, $remarks, $hasOtc, $names, $quantities, $stockIds) {
+            $otc = DB::table('otc_medicine')
+                ->where('patientId', $record->patientId)->where('campus', session('campus'))
+                ->where('date', $record->date)->where('OTCremarks', $record->diagnosis)
+                ->whereNull('deleted_at')->latest('id')->first();
+
+            if ($hasOtc) {
+                $savedNames = $otc ? (json_decode($otc->OTCmedDescript, true) ?: []) : [];
+                $savedQuantities = $otc ? (json_decode($otc->OTCmedpcs, true) ?: []) : [];
+
+                foreach ($names as $index => $name) {
+                    $quantity = (int) ($quantities[$index] ?? 0);
+                    $stock = Stocks::where('id', $stockIds[$index] ?? null)
+                        ->where('campus', session('campus'))->whereNull('deleted_at')->lockForUpdate()->first();
+                    if (!$stock || $quantity < 1 || (int) $stock->item_quantity < $quantity) {
+                        throw new \RuntimeException("Insufficient stock for {$name}.");
+                    }
+                    $before = (int) $stock->item_quantity;
+                    $left = $before - $quantity;
+                    $stock->update(['item_quantity' => $left, 'updated_at' => Carbon::now('Asia/Manila')]);
+                    Inventory::insert([
+                        'added_by' => $this->aes->decrypt(session('employee_id')), 'patientId' => $record->patientId,
+                        'stockId' => $stock->id, 'lotno' => $stock->lotno, 'campus' => session('campus'),
+                        'remaining_stock' => $left, 'item_stock' => $before, 'stock_less' => $quantity,
+                        'date' => $request->date, 'services' => 'Dental', 'updated_at' => Carbon::now('Asia/Manila'),
+                    ]);
+                }
+
+                $allNames = array_merge($savedNames, $names);
+                $allQuantities = array_merge($savedQuantities, array_map('intval', $quantities));
+                $data = [
+                    'OTCremarks' => $request->diagnosis,
+                    'OTCmedpcs' => json_encode($allQuantities),
+                    'OTCmedDescript' => json_encode($allNames),
+                    'date' => $request->date,
+                ];
+                if ($otc) {
+                    DB::table('otc_medicine')->where('id', $otc->id)->update($data + ['updated_at' => Carbon::now('Asia/Manila')]);
+                } else {
+                    $patient = DB::table('dentalchart')->where('id', $record->patientId)->where('campus', session('campus'))->first();
+                    DB::table('otc_medicine')->insert($data + [
+                        'campus' => session('campus'), 'purpose' => 'OTC Medicine', 'patientId' => $record->patientId,
+                        'poscourse' => $patient->poscourse, 'lastname' => $patient->lastname, 'firstname' => $patient->firstname,
+                        'middlename' => $patient->middlename, 'gender' => $patient->gender, 'role' => $patient->role,
+                        'created_at' => Carbon::now('Asia/Manila'),
+                    ]);
+                }
+            }
+
+            $record->update([
+                'date' => $request->date, 'diagnosis' => $request->diagnosis, 'treatment' => $request->treatment,
+                'remarks' => json_encode($remarks), 'updated_at' => Carbon::now('Asia/Manila'),
+            ]);
+        });
+        } catch (\RuntimeException $exception) {
+            return response()->json(['Error' => 1, 'Message' => $exception->getMessage()]);
+        }
               
         return response()->json(['status' => 200,'success' => 'Updated Successfully!']);
     }
@@ -305,11 +366,17 @@ class DentalClientAddController extends Controller
 
         $patientId =$request->patientId;
 
-        $foundStudent = DB::table('student_info')->where('StudentNo',$patientId)->where('campus',session('campus'))->exists();
+        $foundStudent = DB::table('student_info')
+                        ->where('StudentNo',$patientId)
+                        ->where('campus',session('campus'))
+                        ->exists();
 
         if ($foundStudent) {
 
-            $found2 = DB::table('dentalchart')->where('id',$patientId)->where('campus',session('campus'))->exists();
+            $found2 = DB::table('dentalchart')
+                      ->where('id',$patientId)
+                      ->where('campus',session('campus'))
+                      ->exists();
           
             $issues = $request->input('dental_issues');
             $filteredIssues = array_filter($issues, function ($value) {
@@ -493,39 +560,112 @@ class DentalClientAddController extends Controller
             ->where('campus',session('campus'))
             ->exists();
 
-       if (!empty($existingTreatment)) {
-        return response()->json(["Error" => 1, "Message" => "Already exist."]);
-          
-        }else{
-            $save=Treatment::insert([ 
-                'campus' => session('campus'),
-                'patientId'=> $patientId,
-                'role'=> $request->role,
-                'age'=> $request->age,
-                'gender'=> $request->gender,
-                'stat' => $request->stat,
-                'treatment' => $treatment,
-                'diagnosis' =>$diagnosis,
-                'remarks' => json_encode($request->remarks),
-                'created_at' => Carbon::now('Asia/Manila'),
-                'date' =>   $request->date,
-             ]);
-            if ($save) {
-                \App\Services\ClinicNotifications::publish('dental-treatment:' . \Illuminate\Support\Str::uuid(), session('campus'), ['Dentist', 'Attendant'], 'A new dental treatment record was saved.', '/treatment-records');
-            }
-
-     
-              $newId = Treatment::where('patientId', $request->id)
-                ->latest('id')
-                ->where('campus', session('campus'))
-                ->first();
-     
-             return response()->json([
-                'newId' => $newId->id,
-                'status' => 200,
-                'success'   => 'Saved Successfully!'
-            ]);
+        if (!empty($existingTreatment)) {
+            return response()->json(["Error" => 1, "Message" => "Already exist."]);
         }
+
+        $remarks = $request->input('remarks', []);
+        $hasOTCMedicine = in_array('OTC Medicine', $remarks, true);
+        $medicineIds = $request->input('idOTCMed', []);
+        $medicineDescriptions = $request->input('OTCmedDescript', []);
+        $medicineQuantities = $request->input('OTCmedpcs', []);
+
+        if ($hasOTCMedicine) {
+            if (empty($medicineIds) || count($medicineIds) !== count($medicineDescriptions) || count($medicineIds) !== count($medicineQuantities)) {
+                return response()->json(["Error" => 1, "Message" => "Please select a medicine and enter its quantity."]);
+            }
+        }
+
+        try {
+            $newId = DB::transaction(function () use ($request, $patientId, $treatment, $diagnosis, $date, $remarks, $hasOTCMedicine, $medicineIds, $medicineDescriptions, $medicineQuantities) {
+                $treatmentId = DB::table('treatmentrecord')->insertGetId([
+                    'campus' => session('campus'),
+                    'patientId' => $patientId,
+                    'role' => $request->role,
+                    'age' => $request->age,
+                    'gender' => $request->gender,
+                    'stat' => $request->stat,
+                    'treatment' => $treatment,
+                    'diagnosis' => $diagnosis,
+                    'remarks' => json_encode($remarks),
+                    'created_at' => Carbon::now('Asia/Manila'),
+                    'date' => $date,
+                ]);
+
+                if ($hasOTCMedicine) {
+                    $patient = DB::table('dentalchart')
+                        ->where('id', $patientId)
+                        ->where('campus', session('campus'))
+                        ->first();
+
+                    if (!$patient) {
+                        throw new \RuntimeException('Patient dental record was not found.');
+                    }
+
+                    foreach ($medicineIds as $index => $stockId) {
+                        $quantity = (int) ($medicineQuantities[$index] ?? 0);
+                        $description = $medicineDescriptions[$index] ?? 'medicine';
+                        $stock = Stocks::where('id', $stockId)
+                            ->where('campus', session('campus'))
+                            ->whereNull('deleted_at')
+                            ->lockForUpdate()
+                            ->first();
+
+                        if (!$stock || $quantity < 1 || (int) $stock->item_quantity < $quantity) {
+                            throw new \RuntimeException("Quantity is greater than the remaining stock for {$description}.");
+                        }
+
+                        $stockBefore = (int) $stock->item_quantity;
+                        $stockLeft = $stockBefore - $quantity;
+                        $stock->update([
+                            'item_quantity' => $stockLeft,
+                            'updated_at' => Carbon::now('Asia/Manila'),
+                        ]);
+
+                        Inventory::insert([
+                            'added_by' => $this->aes->decrypt(session('employee_id')),
+                            'patientId' => $patientId,
+                            'stockId' => $stockId,
+                            'lotno' => $stock->lotno,
+                            'campus' => session('campus'),
+                            'remaining_stock' => $stockLeft,
+                            'item_stock' => $stockBefore,
+                            'stock_less' => $quantity,
+                            'date' => $date,
+                            'services' => 'Dental',
+                            'updated_at' => Carbon::now('Asia/Manila'),
+                        ]);
+                    }
+
+                    DB::table('otc_medicine')->insert([
+                        'campus' => session('campus'),
+                        'purpose' => 'OTC Medicine',
+                        'patientId' => $patientId,
+                        'poscourse' => $patient->poscourse,
+                        'lastname' => $patient->lastname,
+                        'firstname' => $patient->firstname,
+                        'middlename' => $patient->middlename,
+                        'gender' => $patient->gender,
+                        'role' => $patient->role,
+                        'OTCremarks' => $diagnosis,
+                        'OTCmedpcs' => json_encode(array_map('intval', $medicineQuantities)),
+                        'OTCmedDescript' => json_encode($medicineDescriptions),
+                        'date' => $date,
+                        'created_at' => Carbon::now('Asia/Manila'),
+                    ]);
+                }
+
+                return $treatmentId;
+            });
+        } catch (\RuntimeException $exception) {
+            return response()->json(["Error" => 1, "Message" => $exception->getMessage()]);
+        }
+
+        return response()->json([
+            'newId' => $newId,
+            'status' => 200,
+            'success' => 'Saved Successfully!'
+        ]);
     }
     public function recordList(Request $request){
         $pageConfigs = ['pageHeader' => true];

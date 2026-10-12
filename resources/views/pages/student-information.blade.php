@@ -22,7 +22,7 @@
  }
  #loading {
       display: none;
-      text-align: center;
+      text-align: center;    
     }
 
     #loading img {

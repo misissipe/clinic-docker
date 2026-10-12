@@ -158,17 +158,17 @@
               <textarea class="form-control" name="recommendation" value="" id="recommendation" rows="3" ></textarea>
             </div>
             <br>
-            <div class="form-outline" id="ReqLabRes">
-              <label class="form-label " for="textAreaExample" style="font-weight:700">Required Laboratory Result/s:<span class="text-danger">*</span></label>
-            <input type="text" class="form-control col-sm-4 " style="display: inline-block;" name="reqlabres" aria-describedby="" placeholder="" autocomplete="off">
+            <div class="form-outline" id="ReqLabRes" style="display:none;">
+              <label class="form-label" for="requiredLabResults" style="font-weight:700">Required Laboratory Result/s:<span class="text-danger">*</span></label>
+            <input type="text" id="requiredLabResults" class="form-control col-sm-4" style="display:inline-block;" name="reqlabres" value="{{ old('reqlabres') }}" autocomplete="off" disabled>
             </div>
               <div class="form-outline" id="Others">
-              <label class="form-label " for="textAreaExample" style="font-weight:700">Other/s, please specify:<span class="text-danger">*</span></label>
-              <input type="text" class="form-control col-sm-4 " style="display: inline-block;" name="specify" aria-describedby="" placeholder="" autocomplete="off">
+              <label class="form-label" for="otherConcernSpecify" style="font-weight:700">Other/s, please specify:<span class="text-danger">*</span></label>
+              <input type="text" id="otherConcernSpecify" class="form-control col-sm-4" style="display:inline-block;" name="specify" value="{{ old('specify') }}" autocomplete="off" disabled>
             </div>
-              <div class="form-outline" id="Remarks">
-              <label class="form-label " for="textAreaExample" style="font-weight:700">Action Taken:<span class="text-danger">*</span></label>
-              <input type="text" class="form-control col-sm-4 " style="display: inline-block;" name="remarks" aria-describedby="" placeholder="" autocomplete="off">
+              <div class="form-outline" id="Remarks" style="display:none;">
+              <label class="form-label" for="referralActionTaken" style="font-weight:700">Action Taken:<span class="text-danger">*</span></label>
+              <input type="text" id="referralActionTaken" class="form-control col-sm-4" style="display:inline-block;" name="remarks" value="{{ old('remarks') }}" autocomplete="off" disabled>
             </div>
             <div class="form-outline" id="medicineOTC">
               <button class="btn btn-success" id="addNewinput" type="button">Add</button><br>
@@ -281,8 +281,10 @@ $(document).ready(function() {
 
     if ($("#OC").is(":checked")) {
       $("#Others").show();
+      $("#otherConcernSpecify").prop("disabled", false).prop("required", true);
     } else {
       $("#Others").hide();
+      $("#otherConcernSpecify").prop("required", false).prop("disabled", true).val('');
     }
   });
 });
@@ -294,8 +296,10 @@ $(document).ready(function() {
 
     if ($("#Ref").is(":checked")) {
       $("#Remarks").show();
+      $("#referralActionTaken").prop("disabled", false).prop("required", true);
     } else {
       $("#Remarks").hide();
+      $("#referralActionTaken").prop("required", false).prop("disabled", true).val('');
     }
   });
 });
@@ -307,8 +311,10 @@ $(document).ready(function() {
 
     if ($("#IC").is(":checked")) {
       $("#ReqLabRes").show();
+      $("#requiredLabResults").prop("disabled", false).prop("required", true);
     } else {
       $("#ReqLabRes").hide();
+      $("#requiredLabResults").prop("required", false).prop("disabled", true).val('');
     }
   });
 });

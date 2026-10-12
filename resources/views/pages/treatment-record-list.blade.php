@@ -314,6 +314,46 @@ use App\Http\Controllers\AESCipher;
 $.ajaxSetup({ headers : { 'X-CSRF-TOKEN' : $('meta[name="csrf-token"]').attr('content') }});
   var patientId = 0;
 
+  function editOtcRow(medicine) {
+    medicine = medicine || {};
+    return '<div class="input-group edit-otc-row mb-1" style="position:relative;">' +
+      '<input type="number" min="1" class="form-control col-2 edit-otc-qty" name="editOTCmedpcs[]" placeholder="Pcs." value="' + (medicine.quantity || '') + '">' +
+      '<input type="text" class="form-control col-9 edit-otc-name" name="editOTCmedDescript[]" placeholder="Medicine name" autocomplete="off" value="' + $('<div>').text(medicine.name || '').html() + '">' +
+      '<input type="hidden" class="edit-otc-id" name="editIdOTCMed[]">' +
+      '<button type="button" class="btn btn-outline-danger remove-edit-otc"><i class="fa fa-trash"></i></button>' +
+      '<ul class="list-group edit-otc-results" style="display:none;position:absolute;left:16.67%;right:45px;top:38px;z-index:1060;max-height:170px;overflow:auto;"></ul>' +
+    '</div>';
+  }
+
+  function toggleEditOtc() {
+    var enabled = $('#editOtcCheckbox').is(':checked');
+    $('#editOtcPanel').toggle(enabled);
+    $('#editOtcRows input').prop('disabled', !enabled).prop('required', enabled);
+  }
+
+  $('#editOtcCheckbox').on('change', toggleEditOtc);
+  $('#addEditOtc').on('click', function () { $('#editOtcRows').append(editOtcRow()); toggleEditOtc(); });
+  $(document).on('click', '.remove-edit-otc', function () { $(this).closest('.edit-otc-row').remove(); });
+
+  $(document).on('input', '.edit-otc-name', function () {
+    var input = $(this), results = input.siblings('.edit-otc-results'), query = $.trim(input.val());
+    input.siblings('.edit-otc-id').val('');
+    if (!query) { results.hide().empty(); return; }
+    $.post('/searchMed', {OTCmedDescript: query}, function (data) {
+      results.empty().show();
+      if (!data.length) results.append('<li class="list-group-item">No records found</li>');
+      $.each(data, function (_, item) {
+        $('<li class="list-group-item">').text(item.item_name + ' (' + item.item_quantity + ' pcs.)')
+          .attr('data-name', item.item_name).attr('data-id', item.id).appendTo(results);
+      });
+    }, 'json');
+  });
+  $(document).on('click', '.edit-otc-results li[data-name]', function () {
+    $(this).closest('.edit-otc-row').find('.edit-otc-name').val($(this).attr('data-name'));
+    $(this).closest('.edit-otc-row').find('.edit-otc-id').val($(this).attr('data-id'));
+    $(this).parent().hide().empty();
+  });
+
   $(document).ready(function() {
     $(document).on('click', '.viewbutton', function() {
         var id = $(this).data('id');
@@ -340,18 +380,27 @@ $.ajaxSetup({ headers : { 'X-CSRF-TOKEN' : $('meta[name="csrf-token"]').attr('co
                 $('.treatment').val(response.treatment);
 
       
-                $(document).ready(function() {
-                $('input[name="remarks[]"]').prop('checked', false);
+                $('#updateTreatmentRecordForm input[name="remarks[]"]').prop('checked', false);
 
                 var remarks = response.remarks;
                 console.log(remarks);
 
-                $("input:checkbox[name='remarks[]']").each(function() {
+                $("#updateTreatmentRecordForm input:checkbox[name='remarks[]']").each(function() {
                   if (remarks.includes($(this).val())) {
                     $(this).prop("checked", true);
                   }
                 });
-              });
+                $('#editOtcRows').empty();
+                $('#existingOtcCards').empty();
+                $.each(response.otc_medicines || [], function (_, medicine) {
+                  $('#existingOtcCards').append(
+                    '<div class="mt-1 p-1" style="border:1px solid #d7e0ed;border-radius:8px;background:#f8faff;">' +
+                    '<strong style="color:#29486f;">' + $('<div>').text(medicine.name).html() + ' (Qty: ' + medicine.quantity + ')</strong>' +
+                    '<div style="font-size:12px;color:#64748b;">Issued during this dental treatment</div></div>'
+                  );
+                });
+                $('#existingOtcPanel').toggle((response.otc_medicines || []).length > 0);
+                toggleEditOtc();
             } 
         });
     });
@@ -494,6 +543,8 @@ $("#updateTreatmentRecordForm").submit(function(e) {
               location.reload();			
           }
         })
+      } else if (response.Error == 1) {
+        Swal.fire({icon:'error', title:response.Message});
       }
     }
   });

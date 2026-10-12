@@ -28,7 +28,7 @@
       {{-- <span class="record-status">For Nurse Completion</span> --}}
     </div>
 
-    <form method="POST" action="{{ route('medical.nurse-treatment.save', $medical->id) }}" class="consult-body">
+    <form method="POST" action="{{ route('medical.nurse-treatment.save', $medical->id) }}" class="consult-body" id="nurseTreatmentForm">
       @csrf
       @if($errors->any())
         <div class="alert alert-danger">Please review the required fields.</div>
@@ -38,6 +38,8 @@
         <input type="hidden" name="purpose[]" value="{{ $purpose }}">
       @endforeach
       <input type="hidden" name="recommendation" value="{{ $medical->recommendation }}">
+      <input type="hidden" name="logged_out_date" id="selectedLogoutDate">
+      <input type="hidden" name="logged_out_time" id="selectedLogoutTime">
 
       <div class="section">
         <div class="section-title"><i class="bx bx-plus-medical"></i> Prescribed Medicine</div>
@@ -70,4 +72,39 @@
     </form>
   </div>
 </div>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+document.getElementById('nurseTreatmentForm').addEventListener('submit', function (event) {
+  if (this.dataset.confirmed === '1') return;
+  event.preventDefault();
+  var form = this;
+  var now = new Date();
+  var localDate = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
+  var localTime = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
+
+  Swal.fire({
+    icon: 'question',
+    title: 'Confirm Logout Date & Time',
+    html: '<div style="text-align:left"><label style="font-size:12px;font-weight:700">LOGOUT DATE</label>' +
+      '<input id="confirmLogoutDate" type="date" class="swal2-input" style="width:100%;margin:5px 0 12px" max="' + localDate + '" value="' + localDate + '">' +
+      '<label style="font-size:12px;font-weight:700">LOGOUT TIME</label>' +
+      '<input id="confirmLogoutTime" type="time" class="swal2-input" style="width:100%;margin:5px 0" value="' + localTime + '">' +
+      '<small style="display:block;margin-top:9px;color:#7b8798">Keep the current values if logout is on time, or correct them if logging out late.</small></div>',
+    confirmButtonText: 'Save & Log Out',
+    showCancelButton: true,
+    preConfirm: function () {
+      var date = document.getElementById('confirmLogoutDate').value;
+      var time = document.getElementById('confirmLogoutTime').value;
+      if (!date || !time) { Swal.showValidationMessage('Select both date and time.'); return false; }
+      return {date: date, time: time};
+    }
+  }).then(function (result) {
+    if (!result.isConfirmed) return;
+    document.getElementById('selectedLogoutDate').value = result.value.date;
+    document.getElementById('selectedLogoutTime').value = result.value.time;
+    form.dataset.confirmed = '1';
+    form.submit();
+  });
+});
+</script>
 @endsection
